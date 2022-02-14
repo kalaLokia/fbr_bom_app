@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 # from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
 from database import sql_db
+from database.sql_db import PriceStructure, OSCharges
 
 
 class Ui_MainWindow(object):
@@ -14,7 +15,9 @@ class Ui_MainWindow(object):
         articles = sql_db.query_list_articles_all()
         self.model = QtGui.QStandardItemModel(len(articles), 1)
         self.model.setHorizontalHeaderLabels(["Articles"])
-        self.articles_dict = {}
+        self.articles_dict: dict[
+            str, tuple[str, str, float, PriceStructure, OSCharges]
+        ] = {}
         for row, article in enumerate(articles):
             if article[2] != 0:
                 key = f"{article[0]}  - ₹{article[2]}"
@@ -397,10 +400,20 @@ class Ui_MainWindow(object):
             print("Show results")
             key = self.tableView.model().data(selection[0])
             print(self.articles_dict[key])
+            self.label_Vmrp.setText(str(self.articles_dict[key][2]))
+
             if self.articles_dict[key][-2] == None:
                 print("No matching basic rate found for the brand mrp")
+            else:
+                self.label_Vbasic.setText(str(self.articles_dict[key][3].basic))
             if self.articles_dict[key][-1] == None:
                 print("OS charges for the article isn't given.")
+            else:
+                self.label_Vprint.setText(str(self.articles_dict[key][4].printing))
+                self.label_Vstitch.setText(str(self.articles_dict[key][4].stitching))
+            if not None in self.articles_dict[key]:
+                # TODO: Calculation logic
+                pass
         elif selection == []:
             print("No articles selected")
         else:

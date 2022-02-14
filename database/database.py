@@ -13,12 +13,14 @@ from . import (
     SQL_T_BOM,
     SQL_T_PRICE_STRUCTURE,
     SQL_T_CHARGES,
+    SQL_DB_NAME,
+    SQL_T_FIXED_RATES,
 )  # , SQL_CONN
 
 conn_string = (
     r"Driver={ODBC Driver 17 for SQL Server};"
     r"Server=localhost;"
-    r"Database=production;"
+    rf"Database={SQL_DB_NAME};"
     r"uid=sa;"
     r"pwd=kalalokia;"
     r"Integrated Security=false;"
@@ -35,7 +37,7 @@ class Bom(Base):
 
     __tablename__ = SQL_T_BOM
 
-    index = sa.Column(sa.BIGINT(), primary_key=True, autoincrement=False)
+    bom_id = sa.Column(sa.BIGINT(), primary_key=True, autoincrement=False)
     father = sa.Column(sa.VARCHAR(32))
     child = sa.Column(sa.VARCHAR(32))
     child_qty = sa.Column(sa.FLOAT(5))
@@ -72,8 +74,12 @@ class Article(Base):
 
     @property
     def size(self) -> int:
-        common_size = {"g": 8, "l": 7, "x": 11, "c": 12, "k": 10, "b": 3, "r": 3}
+        common_size = {"g": 8, "l": 7, "x": 12, "c": 12, "k": 10, "b": 3, "r": 3}
         return common_size.get(self.category_code, 8)
+
+    @property
+    def get_filename(self):
+        return self.article + "_mnf.xlsx"
 
 
 class OSCharges(Base):
@@ -82,8 +88,18 @@ class OSCharges(Base):
     __tablename__ = SQL_T_CHARGES
 
     article = sa.Column(sa.VARCHAR(16), primary_key=True)  # same as article_code
-    stitch_rate = sa.Column("stitching", sa.FLOAT(2))
+    stitch_rate = sa.Column(
+        "stitching", sa.FLOAT(2)
+    )  # FIXME: Check the support, real coming as var
     print_rate = sa.Column("printing", sa.FLOAT(2))
+
+    @property
+    def stitching(self):
+        return round(self.stitch_rate, 2)
+
+    @property
+    def printing(self):
+        return round(self.print_rate, 2)
 
 
 class PriceStructure(Base):
@@ -99,6 +115,18 @@ class PriceStructure(Base):
         PrimaryKeyConstraint(ps_code, mrp),
         {},
     )
+
+
+class FixedRates(Base):
+    """Model for Fixed rates on cost"""
+
+    __tablename__ = SQL_T_FIXED_RATES
+
+    rates_id = sa.Column(sa.BIGINT(), primary_key=True, autoincrement=True)
+    name = sa.Column(sa.VARCHAR(50), unique=True)
+    value = sa.Column(sa.FLOAT(5))
+    value_fmt = sa.Column(sa.VARCHAR(10))
+    rate_type = sa.Column(sa.CHAR(2))  # OH: Overheads, OC: Other Charges
 
 
 Base.metadata.create_all(engine)

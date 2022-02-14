@@ -15,7 +15,12 @@ from .sql_db import (
 )
 
 
-from . import SQL_T_BOM, SQL_T_ARTICLE, SQL_CONN, SQL_T_PRICE_STRUCTURE, SQL_T_CHARGES
+from . import (
+    SQL_T_BOM,
+    SQL_T_ARTICLE,
+    SQL_T_PRICE_STRUCTURE,
+    SQL_T_CHARGES,
+)  # ,SQL_CONN
 
 
 def createBomArticleTable():
@@ -185,7 +190,7 @@ def createBomArticleTable():
         con=engine,
         if_exists="append",
         index=True,
-        index_label="index",
+        index_label="bom_id",
     )
     art_df.to_sql(
         SQL_T_ARTICLE,

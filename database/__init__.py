@@ -1,4 +1,6 @@
+SQL_DB_NAME = "harpy_eagle"
 SQL_T_BOM = "tbl_bom"
-SQL_T_ARTICLE = "tbl_articles"
+SQL_T_ARTICLE = "tbl_article_list"
 SQL_T_CHARGES = "tbl_os_charges"
 SQL_T_PRICE_STRUCTURE = "tbl_price_structure"
+SQL_T_FIXED_RATES = "tbl_fixed_rates"
