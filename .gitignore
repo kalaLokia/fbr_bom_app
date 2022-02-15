@@ -40,3 +40,13 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+
+# Dummy files
+data/
+files/
+temp.py
+test.py
+*.ipynb
+*.xlsx
+
+

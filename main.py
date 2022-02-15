@@ -1,11 +1,15 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
+from core.calculate_bom import BillOfMaterial
+from pandas import DataFrame
+from core.cost_analysis import calculateProfit
+from core.create_excel_report import ExcelReporting
 
 # from PyQt6.QtCore import Qt, QSortFilterProxyModel
 # from PyQt6.QtGui import QStandardItemModel, QStandardItem
 
 from database import sql_db
-from database.sql_db import PriceStructure, OSCharges
+from database.sql_db import PriceStructure, OSCharges, Article
 
 
 class Ui_MainWindow(object):
@@ -13,16 +17,15 @@ class Ui_MainWindow(object):
         super().__init__()
 
         articles = sql_db.query_list_articles_all()
+        self.fixed_rates = sql_db.query_fetch_fixed_rates()
         self.model = QtGui.QStandardItemModel(len(articles), 1)
         self.model.setHorizontalHeaderLabels(["Articles"])
-        self.articles_dict: dict[
-            str, tuple[str, str, float, PriceStructure, OSCharges]
-        ] = {}
+        self.articles_dict: dict[str, tuple[Article, PriceStructure, OSCharges]] = {}
         for row, article in enumerate(articles):
-            if article[2] != 0:
-                key = f"{article[0]}  - ₹{article[2]}"
+            if article[0].mrp != 0:
+                key = f"{article[0].article}  - ₹{article[0].mrp}"
             else:
-                key = f"{article[0]}  - ###"
+                key = f"{article[0].article}  - ###"
             item = QtGui.QStandardItem(key)
             self.articles_dict[key] = article
             item.setFlags(
@@ -109,7 +112,7 @@ class Ui_MainWindow(object):
         self.tableView.setEditTriggers(QtWidgets.QTableView.EditTrigger.NoEditTriggers)
         self.tableView.setModel(self.filter_proxy_model)
         # Table Functionality
-        # self.tableView.doubleClicked.connect(self.tableDoubleClicked)
+        self.tableView.doubleClicked.connect(self.tableDoubleClicked)
         self.tableView.clicked.connect(self.tableSingleClicked)
         self.tableView.selectionModel().selectionChanged.connect(
             self.tableSelectionChanged
@@ -153,6 +156,7 @@ class Ui_MainWindow(object):
         sizePolicy.setHeightForWidth(self.pushButton_2.sizePolicy().hasHeightForWidth())
         self.pushButton_2.setSizePolicy(sizePolicy)
         self.pushButton_2.setMinimumSize(QtCore.QSize(150, 60))
+        self.pushButton_2.clicked.connect(self.buttonExport)
         font = QtGui.QFont()
         font.setFamily("Fixedsys")
         font.setPointSize(13)
@@ -346,25 +350,12 @@ class Ui_MainWindow(object):
             self.tableView.clearSelection()
         self.is_all_selected = not self.is_all_selected
 
-    def tableDoubleClicked(self, modelIndex):
+    def tableDoubleClicked(self, *args):
         """Double clicked item in the tableview.
 
-        Select single item only, all other items if selected will be unselected.
+        Same effect as buttonShow: will shows the stats
         """
-        # TODO: show results directly may be !!
-        pass
-        # item = self.model.data(modelIndex)
-        # TODO: Show article's status
-        # print(f"{self.tableView.model().index(modelIndex.row(),0).data()}")
-        # for row in range(0, self.model.rowCount()):
-        #     if modelIndex.row() == row:
-        #         self.model.item(row, 0).setCheckState(Qt.CheckState.Checked)
-        #     else:
-        #         self.model.item(row, 0).setCheckState(Qt.CheckState.Unchecked)
-        # self.lineEdit.setText(
-        #     self.articles_dict[self.tableView.model().data(modelIndex)][0]
-        # )
-        # print(f"{self.tableView.model().data(modelIndex)}")
+        self.buttonShow()
 
     def tableSelectionChanged(
         self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection
@@ -394,36 +385,97 @@ class Ui_MainWindow(object):
 
     def buttonShow(self):
         """Shows cost data"""
-        # TODO: Implement bom functionality
+
         selection = self.tableView.selectedIndexes()
         if len(selection) == 1:
-            print("Show results")
             key = self.tableView.model().data(selection[0])
-            print(self.articles_dict[key])
-            self.label_Vmrp.setText(str(self.articles_dict[key][2]))
+            article = self.articles_dict[key][0]
+            ps = self.articles_dict[key][1]  # Price Structure
+            oc = self.articles_dict[key][2]  # Os Charge
 
-            if self.articles_dict[key][-2] == None:
+            self.label_Vmrp.setText(str(article.mrp))
+
+            if ps == None:
                 print("No matching basic rate found for the brand mrp")
             else:
-                self.label_Vbasic.setText(str(self.articles_dict[key][3].basic))
-            if self.articles_dict[key][-1] == None:
+                self.label_Vbasic.setText(str(ps.basic))
+            if oc == None:
                 print("OS charges for the article isn't given.")
             else:
-                self.label_Vprint.setText(str(self.articles_dict[key][4].printing))
-                self.label_Vstitch.setText(str(self.articles_dict[key][4].stitching))
+                self.label_Vprint.setText(str(oc.printing))
+                self.label_Vstitch.setText(str(oc.stitching))
             if not None in self.articles_dict[key]:
-                # TODO: Calculation logic
-                pass
+                df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
+                if isinstance(df, DataFrame) and not df.empty:
+                    bom = BillOfMaterial(df, article.pairs_in_case)
+                    result = calculateProfit(
+                        basic_rate=ps.basic,
+                        os_charges=oc,
+                        fixed_rates=self.fixed_rates,
+                        material_cost=bom.get_cost_of_materials,
+                    )
+                    print(result)
+                    self.label_Vcop.setText(str(round(result[0], 2)))
+                    self.label_Vnetm.setText("{} %".format(round(result[-1], 2)))
+                    if result[-1] < 0:
+                        self.label_Vnetm.setStyleSheet(
+                            "color : red;background-color:rgb(240, 255, 160);"
+                        )
+                    else:
+                        self.label_Vnetm.setStyleSheet(
+                            "color: green;background-color:rgb(240, 255, 160);"
+                        )
+
         elif selection == []:
             print("No articles selected")
         else:
+            # TODO: Show last selected article's cost
             print("Too many articles selected, select only one.")
-            print(self.model.data(selection[-1]))
+
+            print(f"Last selected: {self.tableView.model().data(selection[-1])}")
 
     def buttonExport(self):
-        """Export button functionality: export as excel file"""
-        # TODO: Export all selected aricle's costsheet to system
-        pass
+        """
+        Export button functionality: export as excel file
+
+        """
+
+        selections = self.tableView.selectedIndexes()
+        if len(selections) >= 1:
+            for selection in selections:
+                key = self.tableView.model().data(selection)
+                article = self.articles_dict[key][0]
+                ps = self.articles_dict[key][1]  # Price Structure
+                oc = self.articles_dict[key][2]  # Os Charge
+
+                if ps == None:
+                    print(
+                        f'No matching basic rate found for the brand mrp of "{article.article}"'
+                    )
+                    continue
+
+                if oc == None:
+                    print(
+                        f"""OS charges for the article "{article.article}" isn't given."""
+                    )
+                    continue
+
+                df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
+                if isinstance(df, DataFrame) and not df.empty:
+                    bom = BillOfMaterial(df, article.pairs_in_case)
+                    xl = ExcelReporting(
+                        article,
+                        oc,
+                        ps.basic,
+                        self.fixed_rates,
+                        bom.rexine_df,
+                        bom.component_df,
+                        bom.moulding_df,
+                        bom.packing_df,
+                    )
+                    xl.generateTable()
+        else:
+            print("No articles selected")
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate

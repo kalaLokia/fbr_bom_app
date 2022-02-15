@@ -5,12 +5,13 @@ def calculateProfit(
     basic_rate: float = 0.0,
     os_charges: OSCharges = None,
     material_cost: float = 0.0,
-    fixed_rates: list(FixedRates) = None,
+    fixed_rates=None,
 ) -> tuple:
     """
-    Returns Cost of upper prod, Total Cost, NET MARGIN of a article.
+    Returns Cost of Production, Total Cost, NET MARGIN of a article.
 
     """
+
     EXPENSES_OVERHEADS = 0
     SELL_DISTR_ROYALTY = 0
     SALES_RETURN = 0
@@ -40,4 +41,4 @@ def calculateProfit(
         net_margin = 0
         net_margin_percent = 0
 
-    return (cost_of_upper_prod, total_cost, net_margin_percent)
+    return (cost_of_prod, total_cost, net_margin_percent)

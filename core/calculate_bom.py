@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 class BillOfMaterial:
     """Article's bom"""
 
-    def __init__(self, df: pd.DataFrame(), pairs_in_case:int) -> None:
+    def __init__(self, df: pd.DataFrame(), pairs_in_case: int) -> None:
         self.bom_df = df
         self.pairs_in_case = pairs_in_case
 
@@ -25,6 +25,7 @@ class BillOfMaterial:
             lambda x: self.calculateRate(x.process_order, x.child_rate, x.child_qty),
             axis=1,
         )
+        self.bom_df = self.bom_df.round({"child_qty": 5, "child_rate": 3, "rate": 2})
 
     @property
     def get_outer_sole(self):

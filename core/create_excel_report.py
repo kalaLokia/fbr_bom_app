@@ -19,7 +19,7 @@ class ExcelReporting:
         article: Article,
         os_charges: OSCharges,
         basic_rate: float,
-        fixed_rates: FixedRates,
+        fixed_rates,
         nl_df,
         co_df,
         pu_df,
@@ -61,15 +61,19 @@ class ExcelReporting:
                     rate.value
                     for rate in fixed_rates
                     if rate.name.lower() == "selling and distribution"
-                ]
+                ][-1]
             )
+            / 100
         )
         self.royality = (
             0
             if not fixed_rates
             else float(
-                [rate.value for rate in fixed_rates if rate.name.lower() == "royality"]
+                [rate.value for rate in fixed_rates if rate.name.lower() == "royality"][
+                    -1
+                ]
             )
+            / 100
         )
         self.sales_return = (
             0
@@ -79,8 +83,9 @@ class ExcelReporting:
                     rate.value
                     for rate in fixed_rates
                     if rate.name.lower() == "sales return"
-                ]
+                ][-1]
             )
+            / 100
         )
 
     @property

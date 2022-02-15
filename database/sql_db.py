@@ -2,7 +2,7 @@
 SQL queries execution
 
 """
-
+from typing import Union
 import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
@@ -56,9 +56,7 @@ def query_list_articles_all():
     with Session() as s:
         result = (
             s.query(
-                Article.article,
-                Article.sap_code,
-                Article.mrp,
+                Article,
                 PriceStructure,
                 OSCharges,
             )
@@ -107,7 +105,7 @@ def query_articles_all():
     return result
 
 
-def query_fetch_bom_df(search_key, size):
+def query_fetch_bom_df(search_key: str, size: int) -> Union[pd.DataFrame, None]:
     """Fetch and return bom dataframe of the article
 
     Runs recursive query on database to fetch the bom.
@@ -137,6 +135,7 @@ def query_fetch_bom_df(search_key, size):
         df = pd.read_sql(raw_query, engine)
     except Exception as e:
         print(e)
+        df = None
 
     return df
 

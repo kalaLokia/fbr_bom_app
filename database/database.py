@@ -9,11 +9,11 @@ from sqlalchemy.engine import URL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.schema import UniqueConstraint, PrimaryKeyConstraint  # , ForeignKey
 from . import (
+    SQL_DB_NAME,
     SQL_T_ARTICLE,
     SQL_T_BOM,
     SQL_T_PRICE_STRUCTURE,
     SQL_T_CHARGES,
-    SQL_DB_NAME,
     SQL_T_FIXED_RATES,
 )  # , SQL_CONN
 
@@ -45,7 +45,7 @@ class Bom(Base):
     process_order = sa.Column(sa.INTEGER())
     child_item = sa.Column(sa.Text())
     child_uom = sa.Column(sa.VARCHAR(10))
-    child_rate = sa.Column(sa.FLOAT(5))
+    child_rate = sa.Column(sa.FLOAT(3))
     child_type = sa.Column(sa.VARCHAR(50))
     application = sa.Column(sa.VARCHAR(8))
 
