@@ -1,4 +1,6 @@
-from database.database import FixedRates, OSCharges
+from datetime import datetime
+
+from database.database import OSCharges
 
 
 def calculateProfit(
@@ -42,3 +44,38 @@ def calculateProfit(
         net_margin_percent = 0
 
     return (cost_of_prod, total_cost, net_margin_percent)
+
+
+def generate_bulk_report(df, fixed_rates) -> None:
+    """
+    Create cost sheet summary report.
+    """
+
+    EXPENSES_OVERHEADS = 0
+    SELL_DISTR_ROYALTY = 0
+    SALES_RETURN = 0
+
+    for rate in fixed_rates:
+        if rate.rate_type.upper() == "OH":
+            EXPENSES_OVERHEADS += rate.value
+        elif rate.rate_type.upper() == "OC":
+            SELL_DISTR_ROYALTY += rate.value / 100
+        elif rate.rate_type.upper() == "SR":
+            SALES_RETURN += rate.value / 100
+
+    df["Cost of Upper Prod"] = (
+        df["Stitching Rate"] + df["Printing Rate"] + df["Cost of Materials"]
+    ).round(2)
+    df["Cost of Prod"] = (df["Cost of Upper Prod"] + EXPENSES_OVERHEADS).round(2)
+    df["Total Cost"] = (
+        ((df["Basic Rate"] * SELL_DISTR_ROYALTY) + df["Cost of Prod"])
+        * (1 + SALES_RETURN)
+    ).round(2)
+    df["Net Margin %"] = (
+        (df["Basic Rate"] - df["Total Cost"]) / df["Basic Rate"] * 100
+    ).round(2)
+
+    filename = "files/Cost Analysis Report [{0}].csv".format(
+        datetime.now().strftime("%d%m%y%H%M%S")
+    )
+    df.to_csv(filename)

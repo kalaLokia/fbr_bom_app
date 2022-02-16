@@ -2,7 +2,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from core.calculate_bom import BillOfMaterial
 from pandas import DataFrame
-from core.cost_analysis import calculateProfit
+from core.cost_analysis import calculateProfit, generate_bulk_report
 from core.create_excel_report import ExcelReporting
 
 # from PyQt6.QtCore import Qt, QSortFilterProxyModel
@@ -476,6 +476,67 @@ class Ui_MainWindow(object):
                     xl.generateTable()
         else:
             print("No articles selected")
+
+    def buttonExportSummaryReport(self):
+        """
+        Export all articles cost sheet summary.
+
+        """
+
+        selections = self.tableView.selectedIndexes()
+        if len(selections) >= 20:
+            data = []
+            for selection in selections:
+                key = self.tableView.model().data(selection)
+                article = self.articles_dict[key][0]
+                ps = self.articles_dict[key][1]  # Price Structure
+                oc = self.articles_dict[key][2]  # Os Charge
+
+                if ps == None:
+                    print(
+                        f'No matching basic rate found for the brand mrp of "{article.article}"'
+                    )
+                    continue
+
+                if oc == None:
+                    print(
+                        f"""OS charges for the article "{article.article}" isn't given."""
+                    )
+                    continue
+
+                df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
+                if isinstance(df, DataFrame) and not df.empty:
+                    bom = BillOfMaterial(df, article.pairs_in_case)
+
+                    data.append(
+                        [
+                            article.art_no,
+                            article.category,
+                            article.color,
+                            article.article_code,
+                            oc.stitch_rate,
+                            oc.print_rate,
+                            bom.get_cost_of_materials,
+                            ps.basic,
+                            ps.mrp,
+                        ]
+                    )
+            if len(data) >= 10:
+                columns = [
+                    "Art No",
+                    "Category",
+                    "Color",
+                    "Sap Code",
+                    "Stitching Rate",
+                    "Printing Rate",
+                    "Cost of Materials",
+                    "Basic Rate",
+                    "MRP",
+                ]
+                df = DataFrame(data, columns=columns)
+                generate_bulk_report(df, self.fixed_rates)
+        else:
+            print("Required minimum number of articles is 20 to get the report.")
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
