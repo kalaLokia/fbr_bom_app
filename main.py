@@ -2,17 +2,16 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from core.calculate_bom import BillOfMaterial
 from pandas import DataFrame
+
 from core.cost_analysis import calculateProfit, generate_bulk_report
 from core.create_excel_report import ExcelReporting
-
-# from PyQt6.QtCore import Qt, QSortFilterProxyModel
-# from PyQt6.QtGui import QStandardItemModel, QStandardItem
-
 from database import sql_db
 from database.sql_db import PriceStructure, OSCharges, Article
 
 
 class Ui_MainWindow(object):
+    """Main Window of the app"""
+
     def __init__(self) -> None:
         super().__init__()
 
@@ -45,7 +44,7 @@ class Ui_MainWindow(object):
 
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(800, 600)
+        MainWindow.resize(879, 638)
         font = QtGui.QFont()
         font.setPointSize(12)
         MainWindow.setFont(font)
@@ -63,21 +62,45 @@ class Ui_MainWindow(object):
             "\n"
             "QMenu::item:selected {  background:rgb(65, 163, 255) }\n"
             "\n"
+            "QLabel{background-color:transparent;border:0px}\n"
+            "\n"
             ""
         )
-
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setStyleSheet(
             "QPushButton::pressed {  background:rgb(144, 198, 255) }\n" ""
         )
         self.centralwidget.setObjectName("centralwidget")
-        self.widget = QtWidgets.QWidget(self.centralwidget)
-        self.widget.setGeometry(QtCore.QRect(20, 30, 341, 461))
-        self.widget.setObjectName("widget")
-        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.widget)
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.lineEdit = QtWidgets.QLineEdit(self.widget)
+        self.main_frame = QtWidgets.QFrame(self.centralwidget)
+        self.main_frame.setGeometry(QtCore.QRect(3, 1, 871, 595))
+        self.main_frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.main_frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.main_frame.setObjectName("main_frame")
+        self.main_left_frame = QtWidgets.QFrame(self.main_frame)
+        self.main_left_frame.setGeometry(QtCore.QRect(8, 8, 310, 580))
+        self.main_left_frame.setFrameShape(QtWidgets.QFrame.Shape.StyledPanel)
+        self.main_left_frame.setFrameShadow(QtWidgets.QFrame.Shadow.Raised)
+        self.main_left_frame.setObjectName("main_left_frame")
+        self.layoutWidget = QtWidgets.QWidget(self.main_left_frame)
+        self.layoutWidget.setGeometry(QtCore.QRect(10, 27, 296, 535))
+        self.layoutWidget.setObjectName("layoutWidget")
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout(self.layoutWidget)
+        self.horizontalLayout_3.setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetMaximumSize
+        )
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        spacerItem = QtWidgets.QSpacerItem(
+            2,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_3.addItem(spacerItem)
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setContentsMargins(-1, -1, 0, 15)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.lineEdit = QtWidgets.QLineEdit(self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Preferred, QtWidgets.QSizePolicy.Policy.Fixed
         )
@@ -85,16 +108,18 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.lineEdit.sizePolicy().hasHeightForWidth())
         self.lineEdit.setSizePolicy(sizePolicy)
+        self.lineEdit.setMinimumSize(QtCore.QSize(280, 0))
         font = QtGui.QFont()
         font.setPointSize(11)
         self.lineEdit.setFont(font)
         self.lineEdit.setStyleSheet("background-color:rgb(255, 255, 255)")
         self.lineEdit.setObjectName("lineEdit")
+        # Connecting data with filter search area
         self.lineEdit.textChanged.connect(
             self.filter_proxy_model.setFilterRegularExpression
         )
-        self.verticalLayout_2.addWidget(self.lineEdit)
-        self.tableView = QtWidgets.QTableView(self.widget)
+        self.verticalLayout.addWidget(self.lineEdit)
+        self.tableView = QtWidgets.QTableView(self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.Expanding,
@@ -103,184 +128,524 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.tableView.sizePolicy().hasHeightForWidth())
         self.tableView.setSizePolicy(sizePolicy)
-        self.tableView.setMinimumSize(QtCore.QSize(300, 0))
+        self.tableView.setMinimumSize(QtCore.QSize(280, 300))
         self.tableView.setStyleSheet("background-color:rgb(255, 255, 255)")
         self.tableView.setObjectName("tableView")
+        # TableView extra functionality #List to display
         self.tableView.horizontalHeader().setSectionResizeMode(
             QtWidgets.QHeaderView.ResizeMode.Stretch
         )
         self.tableView.setEditTriggers(QtWidgets.QTableView.EditTrigger.NoEditTriggers)
         self.tableView.setModel(self.filter_proxy_model)
-        # Table Functionality
         self.tableView.doubleClicked.connect(self.tableDoubleClicked)
         self.tableView.clicked.connect(self.tableSingleClicked)
         self.tableView.selectionModel().selectionChanged.connect(
             self.tableSelectionChanged
         )
-        # self.tableView.
         self.tableView.findChild(QtWidgets.QAbstractButton).clicked.connect(
             self.tableSelectAll
         )
-        self.verticalLayout_2.addWidget(self.tableView)
-        self.widget1 = QtWidgets.QWidget(self.centralwidget)
-        self.widget1.setGeometry(QtCore.QRect(420, 20, 308, 82))
-        self.widget1.setObjectName("widget1")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.widget1)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout.addWidget(self.tableView)
+        spacerItem1 = QtWidgets.QSpacerItem(
+            20,
+            30,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Fixed,
+        )
+        self.verticalLayout.addItem(spacerItem1)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        spacerItem2 = QtWidgets.QSpacerItem(
+            20,
+            20,
+            QtWidgets.QSizePolicy.Policy.Fixed,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_2.addItem(spacerItem2)
+        self.button_show_stats = QtWidgets.QPushButton(self.layoutWidget)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(
+            self.button_show_stats.sizePolicy().hasHeightForWidth()
+        )
+        self.button_show_stats.setSizePolicy(sizePolicy)
+        self.button_show_stats.setMinimumSize(QtCore.QSize(200, 40))
+        font = QtGui.QFont()
+        font.setFamily("Fixedsys")
+        font.setPointSize(13)
+        font.setBold(False)
+        font.setWeight(50)
+        self.button_show_stats.setFont(font)
+        self.button_show_stats.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
+        self.button_show_stats.setObjectName("button_show_stats")
+
+        self.horizontalLayout_2.addWidget(self.button_show_stats)
+        spacerItem3 = QtWidgets.QSpacerItem(
+            20,
+            20,
+            QtWidgets.QSizePolicy.Policy.Fixed,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_2.addItem(spacerItem3)
+        self.verticalLayout.addLayout(self.horizontalLayout_2)
+        spacerItem4 = QtWidgets.QSpacerItem(
+            20,
+            13,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Fixed,
+        )
+        self.verticalLayout.addItem(spacerItem4)
+        self.horizontalLayout = QtWidgets.QHBoxLayout()
+        self.horizontalLayout.setContentsMargins(5, -1, 5, -1)
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.pushButton_1 = QtWidgets.QPushButton(self.widget1)
+        self.button_export_xl = QtWidgets.QPushButton(self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
         )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_1.sizePolicy().hasHeightForWidth())
-        self.pushButton_1.setSizePolicy(sizePolicy)
-        self.pushButton_1.setMinimumSize(QtCore.QSize(150, 60))
+        sizePolicy.setHeightForWidth(
+            self.button_export_xl.sizePolicy().hasHeightForWidth()
+        )
+        self.button_export_xl.setSizePolicy(sizePolicy)
+        self.button_export_xl.setMinimumSize(QtCore.QSize(90, 40))
         font = QtGui.QFont()
         font.setFamily("Fixedsys")
         font.setPointSize(13)
         font.setBold(False)
         font.setWeight(50)
-        self.pushButton_1.setFont(font)
-        self.pushButton_1.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.pushButton_1.setObjectName("pushButton_1")
-        self.horizontalLayout.addWidget(self.pushButton_1)
-        self.pushButton_1.clicked.connect(self.buttonShow)
-        self.pushButton_2 = QtWidgets.QPushButton(self.widget1)
+        self.button_export_xl.setFont(font)
+        self.button_export_xl.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
+        self.button_export_xl.setObjectName("button_export_xl")
+        self.horizontalLayout.addWidget(self.button_export_xl)
+        spacerItem5 = QtWidgets.QSpacerItem(
+            50,
+            30,
+            QtWidgets.QSizePolicy.Policy.Fixed,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout.addItem(spacerItem5)
+        self.button_export_summary = QtWidgets.QPushButton(self.layoutWidget)
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Fixed
         )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.pushButton_2.sizePolicy().hasHeightForWidth())
-        self.pushButton_2.setSizePolicy(sizePolicy)
-        self.pushButton_2.setMinimumSize(QtCore.QSize(150, 60))
-        self.pushButton_2.clicked.connect(self.buttonExport)
+        sizePolicy.setHeightForWidth(
+            self.button_export_summary.sizePolicy().hasHeightForWidth()
+        )
+        self.button_export_summary.setSizePolicy(sizePolicy)
+        self.button_export_summary.setMinimumSize(QtCore.QSize(90, 40))
         font = QtGui.QFont()
         font.setFamily("Fixedsys")
         font.setPointSize(13)
         font.setBold(False)
         font.setWeight(50)
-        self.pushButton_2.setFont(font)
-        self.pushButton_2.setLayoutDirection(QtCore.Qt.LayoutDirection.LeftToRight)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout.addWidget(self.pushButton_2)
-        self.widget2 = QtWidgets.QWidget(self.centralwidget)
-        self.widget2.setGeometry(QtCore.QRect(430, 130, 301, 351))
-        self.widget2.setObjectName("widget2")
-        self.gridLayout = QtWidgets.QGridLayout(self.widget2)
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout.setObjectName("gridLayout")
-        self.label_sth = QtWidgets.QLabel(self.widget2)
+        self.button_export_summary.setFont(font)
+        self.button_export_summary.setLayoutDirection(
+            QtCore.Qt.LayoutDirection.LeftToRight
+        )
+        self.button_export_summary.setObjectName("button_export_summary")
+        self.horizontalLayout.addWidget(self.button_export_summary)
+        self.verticalLayout.addLayout(self.horizontalLayout)
+        self.horizontalLayout_3.addLayout(self.verticalLayout)
+        spacerItem6 = QtWidgets.QSpacerItem(
+            2,
+            20,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        self.horizontalLayout_3.addItem(spacerItem6)
+        self.label = QtWidgets.QLabel(self.main_frame)
+        self.label.setGeometry(QtCore.QRect(430, 40, 331, 31))
+        font = QtGui.QFont()
+        font.setFamily("Rockwell Condensed")
+        font.setPointSize(20)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label.setObjectName("label")
+        self.line = QtWidgets.QFrame(self.main_frame)
+        self.line.setGeometry(QtCore.QRect(430, 70, 331, 20))
+        self.line.setFrameShape(QtWidgets.QFrame.Shape.HLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
+        self.line.setObjectName("line")
+        self.button_export_xl_sub = QtWidgets.QPushButton(self.main_frame)
+        self.button_export_xl_sub.setGeometry(QtCore.QRect(820, 10, 41, 31))
+        self.button_export_xl_sub.setText("")
+        icon1 = QtGui.QIcon()
+        icon1.addPixmap(
+            QtGui.QPixmap("icons/file-export-solid.svg"),
+            QtGui.QIcon.Mode.Normal,
+            QtGui.QIcon.State.Off,
+        )
+        self.button_export_xl_sub.setIcon(icon1)
+        self.button_export_xl_sub.setObjectName("button_export_xl_sub")
+        self.layoutWidget1 = QtWidgets.QWidget(self.main_frame)
+        self.layoutWidget1.setGeometry(QtCore.QRect(330, 100, 531, 301))
+        self.layoutWidget1.setObjectName("layoutWidget1")
+        self.verticalLayout_12 = QtWidgets.QVBoxLayout(self.layoutWidget1)
+        self.verticalLayout_12.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_12.setObjectName("verticalLayout_12")
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint
+        )
+        self.horizontalLayout_4.setSpacing(10)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.widget_2 = QtWidgets.QWidget(self.layoutWidget1)
+        self.widget_2.setMaximumSize(QtCore.QSize(122, 63))
+        self.widget_2.setStyleSheet(
+            "background-color:rgb(255, 255, 255);\n"
+            "border:1px solid black;\n"
+            "border-radius:20px;"
+        )
+        self.widget_2.setObjectName("widget_2")
+        self.label_stich = QtWidgets.QLabel(self.widget_2)
+        self.label_stich.setEnabled(True)
+        self.label_stich.setGeometry(QtCore.QRect(10, 10, 100, 20))
         sizePolicy = QtWidgets.QSizePolicy(
             QtWidgets.QSizePolicy.Policy.Preferred,
             QtWidgets.QSizePolicy.Policy.Preferred,
         )
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.label_sth.sizePolicy().hasHeightForWidth())
-        self.label_sth.setSizePolicy(sizePolicy)
-        self.label_sth.setMinimumSize(QtCore.QSize(100, 0))
+        sizePolicy.setHeightForWidth(self.label_stich.sizePolicy().hasHeightForWidth())
+        self.label_stich.setSizePolicy(sizePolicy)
+        self.label_stich.setMinimumSize(QtCore.QSize(100, 0))
         font = QtGui.QFont()
-        font.setPointSize(11)
-        self.label_sth.setFont(font)
-        self.label_sth.setStyleSheet("background-color:rgb(217, 255, 215)")
-        self.label_sth.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.label_sth.setObjectName("label_sth")
-        self.gridLayout.addWidget(self.label_sth, 0, 0, 1, 1)
-        self.label_Vstitch = QtWidgets.QLabel(self.widget2)
+        font.setFamily("Segoe UI Emoji")
+        font.setPointSize(8)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(50)
+        font.setKerning(True)
+        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferDefault)
+        self.label_stich.setFont(font)
+        self.label_stich.setAutoFillBackground(False)
+        self.label_stich.setStyleSheet("border:0px solid transperant;")
+        self.label_stich.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_stich.setObjectName("label_stich")
+        self.label_Vstitch = QtWidgets.QLabel(self.widget_2)
+        self.label_Vstitch.setGeometry(QtCore.QRect(10, 30, 100, 29))
         font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setFamily("Bahnschrift")
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
         self.label_Vstitch.setFont(font)
-        self.label_Vstitch.setStyleSheet("background-color:rgb(217, 255, 215)")
+        self.label_Vstitch.setStyleSheet("border:0px;")
         self.label_Vstitch.setTextFormat(QtCore.Qt.TextFormat.PlainText)
         self.label_Vstitch.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_Vstitch.setObjectName("label_Vstitch")
-        self.gridLayout.addWidget(self.label_Vstitch, 0, 1, 1, 1)
-        self.label_print = QtWidgets.QLabel(self.widget2)
+        self.horizontalLayout_4.addWidget(self.widget_2)
+        self.widget_3 = QtWidgets.QWidget(self.layoutWidget1)
+        self.widget_3.setMaximumSize(QtCore.QSize(122, 65))
+        self.widget_3.setStyleSheet(
+            "background-color:rgb(255, 255, 255);\n"
+            "border:1px solid black;\n"
+            "border-radius:20px;"
+        )
+        self.widget_3.setObjectName("widget_3")
+        self.label_print = QtWidgets.QLabel(self.widget_3)
+        self.label_print.setEnabled(True)
+        self.label_print.setGeometry(QtCore.QRect(10, 10, 100, 20))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_print.sizePolicy().hasHeightForWidth())
+        self.label_print.setSizePolicy(sizePolicy)
+        self.label_print.setMinimumSize(QtCore.QSize(100, 0))
         font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setFamily("Segoe UI Emoji")
+        font.setPointSize(8)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(50)
+        font.setKerning(True)
+        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferDefault)
         self.label_print.setFont(font)
-        self.label_print.setStyleSheet("background-color:rgb(217, 255, 215)")
+        self.label_print.setAutoFillBackground(False)
+        self.label_print.setStyleSheet("border:0px;")
         self.label_print.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_print.setObjectName("label_print")
-        self.gridLayout.addWidget(self.label_print, 1, 0, 1, 1)
-        self.label_Vprint = QtWidgets.QLabel(self.widget2)
+        self.label_Vprint = QtWidgets.QLabel(self.widget_3)
+        self.label_Vprint.setGeometry(QtCore.QRect(10, 30, 100, 29))
         font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setFamily("Bahnschrift")
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
         self.label_Vprint.setFont(font)
-        self.label_Vprint.setStyleSheet("background-color:rgb(217, 255, 215)")
+        self.label_Vprint.setStyleSheet("border:0px;")
+        self.label_Vprint.setTextFormat(QtCore.Qt.TextFormat.PlainText)
         self.label_Vprint.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_Vprint.setObjectName("label_Vprint")
-        self.gridLayout.addWidget(self.label_Vprint, 1, 1, 1, 1)
-        self.label_mrp = QtWidgets.QLabel(self.widget2)
+        self.horizontalLayout_4.addWidget(self.widget_3)
+        self.widget_4 = QtWidgets.QWidget(self.layoutWidget1)
+        self.widget_4.setMaximumSize(QtCore.QSize(122, 65))
+        self.widget_4.setStyleSheet(
+            "background-color:rgb(255, 255, 255);\n"
+            "border:1px solid black;\n"
+            "border-radius:20px;"
+        )
+        self.widget_4.setObjectName("widget_4")
+        self.label_mc = QtWidgets.QLabel(self.widget_4)
+        self.label_mc.setEnabled(True)
+        self.label_mc.setGeometry(QtCore.QRect(10, 10, 100, 20))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_mc.sizePolicy().hasHeightForWidth())
+        self.label_mc.setSizePolicy(sizePolicy)
+        self.label_mc.setMinimumSize(QtCore.QSize(100, 0))
         font = QtGui.QFont()
-        font.setPointSize(11)
-        self.label_mrp.setFont(font)
-        self.label_mrp.setStyleSheet("background-color:rgb(229, 255, 190)")
-        self.label_mrp.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.label_mrp.setObjectName("label_mrp")
-        self.gridLayout.addWidget(self.label_mrp, 2, 0, 1, 1)
-        self.label_Vmrp = QtWidgets.QLabel(self.widget2)
+        font.setFamily("Segoe UI Emoji")
+        font.setPointSize(8)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(50)
+        font.setKerning(True)
+        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferDefault)
+        self.label_mc.setFont(font)
+        self.label_mc.setAutoFillBackground(False)
+        self.label_mc.setStyleSheet("border:0px;")
+        self.label_mc.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_mc.setObjectName("label_mc")
+        self.label_Vmc = QtWidgets.QLabel(self.widget_4)
+        self.label_Vmc.setGeometry(QtCore.QRect(10, 30, 100, 29))
         font = QtGui.QFont()
-        font.setPointSize(11)
-        self.label_Vmrp.setFont(font)
-        self.label_Vmrp.setStyleSheet("background-color:rgb(229, 255, 190)")
-        self.label_Vmrp.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.label_Vmrp.setObjectName("label_Vmrp")
-        self.gridLayout.addWidget(self.label_Vmrp, 2, 1, 1, 1)
-        self.label_basic = QtWidgets.QLabel(self.widget2)
+        font.setFamily("Bahnschrift")
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_Vmc.setFont(font)
+        self.label_Vmc.setStyleSheet("border:0px;")
+        self.label_Vmc.setTextFormat(QtCore.Qt.TextFormat.PlainText)
+        self.label_Vmc.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_Vmc.setObjectName("label_Vmc")
+        self.horizontalLayout_4.addWidget(self.widget_4)
+        self.widget_5 = QtWidgets.QWidget(self.layoutWidget1)
+        self.widget_5.setMaximumSize(QtCore.QSize(122, 65))
+        self.widget_5.setStyleSheet(
+            "background-color:rgb(255, 255, 255);\n"
+            "border:1px solid black;\n"
+            "border-radius:20px;"
+        )
+        self.widget_5.setObjectName("widget_5")
+        self.label_cop = QtWidgets.QLabel(self.widget_5)
+        self.label_cop.setEnabled(True)
+        self.label_cop.setGeometry(QtCore.QRect(10, 10, 100, 20))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_cop.sizePolicy().hasHeightForWidth())
+        self.label_cop.setSizePolicy(sizePolicy)
+        self.label_cop.setMinimumSize(QtCore.QSize(100, 0))
         font = QtGui.QFont()
-        font.setPointSize(11)
-        self.label_basic.setFont(font)
-        self.label_basic.setStyleSheet("background-color:rgb(229, 255, 190)")
-        self.label_basic.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.label_basic.setObjectName("label_basic")
-        self.gridLayout.addWidget(self.label_basic, 3, 0, 1, 1)
-        self.label_Vbasic = QtWidgets.QLabel(self.widget2)
-        font = QtGui.QFont()
-        font.setPointSize(11)
-        self.label_Vbasic.setFont(font)
-        self.label_Vbasic.setStyleSheet("background-color:rgb(229, 255, 190)")
-        self.label_Vbasic.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-        self.label_Vbasic.setObjectName("label_Vbasic")
-        self.gridLayout.addWidget(self.label_Vbasic, 3, 1, 1, 1)
-        self.label_cop = QtWidgets.QLabel(self.widget2)
-        font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setFamily("Segoe UI Emoji")
+        font.setPointSize(8)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(50)
+        font.setKerning(True)
+        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferDefault)
         self.label_cop.setFont(font)
-        self.label_cop.setStyleSheet("background-color:rgb(227, 255, 185)")
+        self.label_cop.setAutoFillBackground(False)
+        self.label_cop.setStyleSheet("border:0px;")
         self.label_cop.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_cop.setObjectName("label_cop")
-        self.gridLayout.addWidget(self.label_cop, 4, 0, 1, 1)
-        self.label_Vcop = QtWidgets.QLabel(self.widget2)
+        self.label_Vcop = QtWidgets.QLabel(self.widget_5)
+        self.label_Vcop.setGeometry(QtCore.QRect(10, 30, 100, 29))
         font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setFamily("Bahnschrift")
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
         self.label_Vcop.setFont(font)
-        self.label_Vcop.setStyleSheet("background-color:rgb(227, 255, 185)")
+        self.label_Vcop.setStyleSheet("border:0px;")
+        self.label_Vcop.setTextFormat(QtCore.Qt.TextFormat.PlainText)
         self.label_Vcop.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_Vcop.setObjectName("label_Vcop")
-        self.gridLayout.addWidget(self.label_Vcop, 4, 1, 1, 1)
-        self.label_netm = QtWidgets.QLabel(self.widget2)
+        self.horizontalLayout_4.addWidget(self.widget_5)
+        self.verticalLayout_12.addLayout(self.horizontalLayout_4)
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_5.setSizeConstraint(
+            QtWidgets.QLayout.SizeConstraint.SetDefaultConstraint
+        )
+        self.horizontalLayout_5.setSpacing(10)
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.widget_6 = QtWidgets.QWidget(self.layoutWidget1)
+        self.widget_6.setMinimumSize(QtCore.QSize(120, 0))
+        self.widget_6.setMaximumSize(QtCore.QSize(122, 65))
+        self.widget_6.setStyleSheet(
+            "background-color:rgb(255, 255, 255);\n"
+            "border:1px solid black;\n"
+            "border-radius:20px;"
+        )
+        self.widget_6.setObjectName("widget_6")
+        self.label_Vbasic = QtWidgets.QLabel(self.widget_6)
+        self.label_Vbasic.setGeometry(QtCore.QRect(10, 30, 100, 20))
         font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setFamily("Bahnschrift")
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_Vbasic.setFont(font)
+        self.label_Vbasic.setStyleSheet("border:0px;")
+        self.label_Vbasic.setTextFormat(QtCore.Qt.TextFormat.PlainText)
+        self.label_Vbasic.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_Vbasic.setObjectName("label_Vbasic")
+        self.label_basic = QtWidgets.QLabel(self.widget_6)
+        self.label_basic.setEnabled(True)
+        self.label_basic.setGeometry(QtCore.QRect(10, 10, 100, 15))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_basic.sizePolicy().hasHeightForWidth())
+        self.label_basic.setSizePolicy(sizePolicy)
+        self.label_basic.setMinimumSize(QtCore.QSize(100, 0))
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI Emoji")
+        font.setPointSize(8)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(50)
+        font.setKerning(True)
+        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferDefault)
+        self.label_basic.setFont(font)
+        self.label_basic.setAutoFillBackground(False)
+        self.label_basic.setStyleSheet("border:0px;")
+        self.label_basic.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_basic.setObjectName("label_basic")
+        self.horizontalLayout_5.addWidget(self.widget_6)
+        self.widget = QtWidgets.QWidget(self.layoutWidget1)
+        self.widget.setMinimumSize(QtCore.QSize(120, 120))
+        self.widget.setMaximumSize(QtCore.QSize(160, 140))
+        font = QtGui.QFont()
+        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferAntialias)
+        self.widget.setFont(font)
+        self.widget.setStyleSheet(
+            "background-color:rgb(255, 255, 255);\n"
+            "border:1px solid black;\n"
+            "border-radius:60px;"
+        )
+        self.widget.setObjectName("widget")
+        self.label_netm = QtWidgets.QLabel(self.widget)
+        self.label_netm.setEnabled(True)
+        self.label_netm.setGeometry(QtCore.QRect(30, 10, 100, 31))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_netm.sizePolicy().hasHeightForWidth())
+        self.label_netm.setSizePolicy(sizePolicy)
+        self.label_netm.setMinimumSize(QtCore.QSize(100, 0))
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI Emoji")
+        font.setPointSize(9)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(50)
+        font.setKerning(True)
+        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferDefault)
         self.label_netm.setFont(font)
-        self.label_netm.setStyleSheet("background-color:rgb(240, 255, 160)")
+        self.label_netm.setAutoFillBackground(False)
+        self.label_netm.setStyleSheet("border:0px;\n" "background-color:transparent;")
         self.label_netm.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_netm.setObjectName("label_netm")
-        self.gridLayout.addWidget(self.label_netm, 5, 0, 1, 1)
-        self.label_Vnetm = QtWidgets.QLabel(self.widget2)
+        self.label_Vnetm = QtWidgets.QLabel(self.widget)
+        self.label_Vnetm.setGeometry(QtCore.QRect(10, 40, 141, 51))
         font = QtGui.QFont()
-        font.setPointSize(11)
+        font.setFamily("Bahnschrift")
+        font.setPointSize(30)
         self.label_Vnetm.setFont(font)
-        self.label_Vnetm.setStyleSheet("background-color:rgb(240, 255, 160)")
+        self.label_Vnetm.setStyleSheet("border:0px;\n" "background-color:transparent;")
+        self.label_Vnetm.setTextFormat(QtCore.Qt.TextFormat.PlainText)
         self.label_Vnetm.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.label_Vnetm.setObjectName("label_Vnetm")
-        self.gridLayout.addWidget(self.label_Vnetm, 5, 1, 1, 1)
+        self.horizontalLayout_5.addWidget(self.widget)
+        self.widget_7 = QtWidgets.QWidget(self.layoutWidget1)
+        self.widget_7.setMaximumSize(QtCore.QSize(122, 65))
+        self.widget_7.setStyleSheet(
+            "background-color:rgb(255, 255, 255);\n"
+            "border:1px solid black;\n"
+            "border-radius:20px;"
+        )
+        self.widget_7.setObjectName("widget_7")
+        self.label_mrp = QtWidgets.QLabel(self.widget_7)
+        self.label_mrp.setEnabled(True)
+        self.label_mrp.setGeometry(QtCore.QRect(10, 10, 100, 20))
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.label_mrp.sizePolicy().hasHeightForWidth())
+        self.label_mrp.setSizePolicy(sizePolicy)
+        self.label_mrp.setMinimumSize(QtCore.QSize(100, 0))
+        font = QtGui.QFont()
+        font.setFamily("Segoe UI Emoji")
+        font.setPointSize(8)
+        font.setBold(False)
+        font.setItalic(False)
+        font.setWeight(50)
+        font.setKerning(True)
+        font.setStyleStrategy(QtGui.QFont.StyleStrategy.PreferDefault)
+        self.label_mrp.setFont(font)
+        self.label_mrp.setAutoFillBackground(False)
+        self.label_mrp.setStyleSheet("border:0px;")
+        self.label_mrp.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_mrp.setObjectName("label_mrp")
+        self.label_Vmrp = QtWidgets.QLabel(self.widget_7)
+        self.label_Vmrp.setGeometry(QtCore.QRect(10, 30, 100, 29))
+        font = QtGui.QFont()
+        font.setFamily("Bahnschrift")
+        font.setPointSize(18)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_Vmrp.setFont(font)
+        self.label_Vmrp.setStyleSheet("border:0px;")
+        self.label_Vmrp.setTextFormat(QtCore.Qt.TextFormat.PlainText)
+        self.label_Vmrp.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
+        self.label_Vmrp.setObjectName("label_Vmrp")
+        self.horizontalLayout_5.addWidget(self.widget_7)
+        self.verticalLayout_12.addLayout(self.horizontalLayout_5)
+        self.widget_8 = QtWidgets.QWidget(self.main_frame)
+        self.widget_8.setGeometry(QtCore.QRect(320, 450, 541, 141))
+        self.widget_8.setObjectName("widget_8")
+        self.status_text_box = QtWidgets.QTextBrowser(self.widget_8)
+        self.status_text_box.setGeometry(QtCore.QRect(10, 10, 531, 101))
+        self.status_text_box.setObjectName("status_text_box")
+        self.progressBar = QtWidgets.QProgressBar(self.widget_8)
+        self.progressBar.setGeometry(QtCore.QRect(180, 120, 191, 21))
+        font = QtGui.QFont()
+        font.setFamily("Gadugi")
+        self.progressBar.setFont(font)
+        self.progressBar.setProperty("value", 24)
+        self.progressBar.setObjectName("progressBar")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 879, 21))
         self.menubar.setObjectName("menubar")
         self.menuFile = QtWidgets.QMenu(self.menubar)
         self.menuFile.setStyleSheet("")
@@ -290,10 +655,6 @@ class Ui_MainWindow(object):
         self.menuDatabase.setObjectName("menuDatabase")
         self.menuBom = QtWidgets.QMenu(self.menuDatabase)
         self.menuBom.setObjectName("menuBom")
-        self.menuOS_Charges = QtWidgets.QMenu(self.menuDatabase)
-        self.menuOS_Charges.setObjectName("menuOS_Charges")
-        self.menuPrice_Structure = QtWidgets.QMenu(self.menuDatabase)
-        self.menuPrice_Structure.setObjectName("menuPrice_Structure")
         self.menuHelp = QtWidgets.QMenu(self.menubar)
         self.menuHelp.setStyleSheet("")
         self.menuHelp.setObjectName("menuHelp")
@@ -321,25 +682,100 @@ class Ui_MainWindow(object):
         self.actionUpdate_From_File_3.setObjectName("actionUpdate_From_File_3")
         self.actionAbout = QtGui.QAction(MainWindow)
         self.actionAbout.setObjectName("actionAbout")
+        self.actionOS_Charges = QtGui.QAction(MainWindow)
+        self.actionOS_Charges.setObjectName("actionOS_Charges")
+        self.actionPrice_Structure = QtGui.QAction(MainWindow)
+        self.actionPrice_Structure.setObjectName("actionPrice_Structure")
+        self.actionOS_Charges_2 = QtGui.QAction(MainWindow)
+        self.actionOS_Charges_2.setObjectName("actionOS_Charges_2")
+        self.actionPrice_Structure_2 = QtGui.QAction(MainWindow)
+        self.actionPrice_Structure_2.setObjectName("actionPrice_Structure_2")
         self.menuFile.addAction(self.actionClose)
         self.menuBom.addAction(self.actionUpdate_From_File)
-        self.menuOS_Charges.addAction(self.actionAdd_New_Charges)
-        self.menuOS_Charges.addAction(self.actionUpdate_Existing_Charges)
-        self.menuOS_Charges.addSeparator()
-        self.menuOS_Charges.addAction(self.actionUpdate_From_File_2)
-        self.menuPrice_Structure.addAction(self.actionAdd_New_Price)
-        self.menuPrice_Structure.addAction(self.actionUpdate_Existing_Price)
-        self.menuPrice_Structure.addSeparator()
-        self.menuPrice_Structure.addAction(self.actionUpdate_From_File_3)
+        self.menuBom.addAction(self.actionOS_Charges_2)
+        self.menuBom.addAction(self.actionPrice_Structure_2)
+        self.menuDatabase.addAction(self.actionOS_Charges)
+        self.menuDatabase.addAction(self.actionPrice_Structure)
         self.menuDatabase.addAction(self.menuBom.menuAction())
-        self.menuDatabase.addAction(self.menuOS_Charges.menuAction())
-        self.menuDatabase.addAction(self.menuPrice_Structure.menuAction())
         self.menuHelp.addAction(self.actionAbout)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuDatabase.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
+
+        # Button Functionality for showing stats
+        self.button_show_stats.clicked.connect(self.buttonShow)
+        self.button_export_xl.clicked.connect(self.buttonExport)
+        self.button_export_summary.clicked.connect(self.buttonExportSummaryReport)
+        # TODO: Create new method
+        self.button_export_xl_sub.clicked.connect(self.buttonExport)
+
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def retranslateUi(self, MainWindow):
+        _translate = QtCore.QCoreApplication.translate
+        MainWindow.setWindowTitle(
+            _translate("MainWindow", "Fortune Br - Bill of Materials")
+        )
+        self.button_show_stats.setText(_translate("MainWindow", "Show Stats"))
+        self.button_export_xl.setText(_translate("MainWindow", "Export"))
+        self.button_export_summary.setText(_translate("MainWindow", "Report"))
+        self.label.setText(_translate("MainWindow", "DG9110 Navy Blue Red Gents"))
+        self.label_stich.setText(_translate("MainWindow", "Stitching Charge"))
+        self.label_Vstitch.setText(_translate("MainWindow", "0.00"))
+        self.label_print.setText(_translate("MainWindow", "Printing Charge"))
+        self.label_Vprint.setText(_translate("MainWindow", "0.00"))
+        self.label_mc.setText(_translate("MainWindow", "Material Cost"))
+        self.label_Vmc.setText(_translate("MainWindow", "0.00"))
+        self.label_cop.setText(_translate("MainWindow", "Cost of Production"))
+        self.label_Vcop.setText(_translate("MainWindow", "0.00"))
+        self.label_Vbasic.setText(_translate("MainWindow", "0.00"))
+        self.label_basic.setText(_translate("MainWindow", "BASIC"))
+        self.label_netm.setText(_translate("MainWindow", "Net Margin"))
+        self.label_Vnetm.setText(_translate("MainWindow", "-00.00%"))
+        self.label_mrp.setText(_translate("MainWindow", "MRP"))
+        self.label_Vmrp.setText(_translate("MainWindow", "0.00"))
+        self.status_text_box.setHtml(
+            _translate(
+                "MainWindow",
+                '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">\n'
+                '<html><head><meta name="qrichtext" content="1" /><style type="text/css">\n'
+                "p, li { white-space: pre-wrap; }\n"
+                "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
+                '<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-family:\'Slack-Lato,appleLogo,sans-serif\'; color:#000000;">( ＾∇＾)</span><span style=" font-size:10pt;"> Specially deddicated to </span><span style=" font-size:10pt; font-weight:600; color:#5555ff;">Manaf K N </span><span style=" font-size:10pt; font-weight:600; color:#000000;">- UMC</span></p>\n'
+                '<p style="-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><br /></p>\n'
+                '<p align="right" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:10pt; font-style:italic; background-color:#ffffff;">Made with </span><span style=" font-family:\'apple color emoji,segoe ui emoji,noto color emoji,android emoji,emojisymbols,emojione mozilla,twemoji mozilla,segoe ui symbol\'; font-size:10pt; color:#ff0000; background-color:#ffffff;">❤️</span><span style=" font-size:10pt; font-style:italic; background-color:#ffffff;"> from </span><span style=" font-size:10pt; font-weight:600; font-style:italic; background-color:#ffffff;">OM</span><span style=" font-size:10pt; font-style:italic; background-color:#ffffff;"> Dept - Fortune Branch </span></p></body></html>',
+            )
+        )
+        self.menuFile.setTitle(_translate("MainWindow", "File"))
+        self.menuDatabase.setTitle(_translate("MainWindow", "Database"))
+        self.menuBom.setTitle(_translate("MainWindow", "Re-create Tables"))
+        self.menuHelp.setTitle(_translate("MainWindow", "Help"))
+        self.actionClose.setText(_translate("MainWindow", "Close"))
+        self.actionUpdate_From_File.setText(_translate("MainWindow", "Bom"))
+        self.actionAdd_New_Charges.setText(_translate("MainWindow", "Add New Charges"))
+        self.actionUpdate_Existing_Charges.setText(
+            _translate("MainWindow", "Update Existing Charges")
+        )
+        self.actionUpdate_From_File_2.setText(
+            _translate("MainWindow", "Update From File")
+        )
+        self.actionAdd_New_Price.setText(_translate("MainWindow", "Add New Price"))
+        self.actionUpdate_Existing_Price.setText(
+            _translate("MainWindow", "Update Existing Price")
+        )
+        self.actionUpdate_From_File_3.setText(
+            _translate("MainWindow", "Update From File")
+        )
+        self.actionAbout.setText(_translate("MainWindow", "About"))
+        self.actionOS_Charges.setText(_translate("MainWindow", "Manage OS Charges"))
+        self.actionPrice_Structure.setText(
+            _translate("MainWindow", "Manage Price Structure")
+        )
+        self.actionOS_Charges_2.setText(_translate("MainWindow", "OS Charges"))
+        self.actionPrice_Structure_2.setText(
+            _translate("MainWindow", "Price Structure")
+        )
 
     def tableSelectAll(self):
         """Select or Unselect all check boxes in the table.
@@ -385,15 +821,16 @@ class Ui_MainWindow(object):
 
     def buttonShow(self):
         """Shows cost data"""
-
+        self.default_label_values()
         selection = self.tableView.selectedIndexes()
         if len(selection) == 1:
             key = self.tableView.model().data(selection[0])
             article = self.articles_dict[key][0]
             ps = self.articles_dict[key][1]  # Price Structure
             oc = self.articles_dict[key][2]  # Os Charge
-
-            self.label_Vmrp.setText(str(article.mrp))
+            self.label.setText(article.article)
+            if article.mrp > 0:
+                self.label_Vmrp.setText(str(article.mrp))
 
             if ps == None:
                 print("No matching basic rate found for the brand mrp")
@@ -416,15 +853,12 @@ class Ui_MainWindow(object):
                     )
                     print(result)
                     self.label_Vcop.setText(str(round(result[0], 2)))
-                    self.label_Vnetm.setText("{} %".format(round(result[-1], 2)))
+                    self.label_Vmc.setText(str(round(bom.get_cost_of_materials, 2)))
+                    self.label_Vnetm.setText("{}%".format(round(result[-1], 2)))
                     if result[-1] < 0:
-                        self.label_Vnetm.setStyleSheet(
-                            "color : red;background-color:rgb(240, 255, 160);"
-                        )
+                        self.label_Vnetm.setStyleSheet("color : red;border:0px;")
                     else:
-                        self.label_Vnetm.setStyleSheet(
-                            "color: green;background-color:rgb(240, 255, 160);"
-                        )
+                        self.label_Vnetm.setStyleSheet("color: green;border:0px;")
 
         elif selection == []:
             print("No articles selected")
@@ -538,56 +972,24 @@ class Ui_MainWindow(object):
         else:
             print("Required minimum number of articles is 20 to get the report.")
 
-    def retranslateUi(self, MainWindow):
-        _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(
-            _translate("MainWindow", "Fortune Br - Bill of Materials")
-        )
-        self.pushButton_1.setText(_translate("MainWindow", "Show"))
-        self.pushButton_2.setText(_translate("MainWindow", "Export"))
-        self.label_sth.setText(_translate("MainWindow", "Stitching Charge"))
-        self.label_Vstitch.setText(_translate("MainWindow", "0.00"))
-        self.label_print.setText(_translate("MainWindow", "Printing Charge"))
-        self.label_Vprint.setText(_translate("MainWindow", "0.00"))
-        self.label_mrp.setText(_translate("MainWindow", "MRP"))
-        self.label_Vmrp.setText(_translate("MainWindow", "0.00"))
-        self.label_basic.setText(_translate("MainWindow", "BASIC"))
-        self.label_Vbasic.setText(_translate("MainWindow", "0.00"))
-        self.label_cop.setText(_translate("MainWindow", "Cost of Production"))
-        self.label_Vcop.setText(_translate("MainWindow", "0.00"))
-        self.label_netm.setText(_translate("MainWindow", "Net Margin"))
-        self.label_Vnetm.setText(_translate("MainWindow", "0.00"))
-        self.menuFile.setTitle(_translate("MainWindow", "File"))
-        self.menuDatabase.setTitle(_translate("MainWindow", "Database"))
-        self.menuBom.setTitle(_translate("MainWindow", "Bom"))
-        self.menuOS_Charges.setTitle(_translate("MainWindow", "OS Charges"))
-        self.menuPrice_Structure.setTitle(_translate("MainWindow", "Price Structure"))
-        self.menuHelp.setTitle(_translate("MainWindow", "Help"))
-        self.actionClose.setText(_translate("MainWindow", "Close"))
-        self.actionUpdate_From_File.setText(
-            _translate("MainWindow", "Update From File")
-        )
-        self.actionAdd_New_Charges.setText(_translate("MainWindow", "Add New Charges"))
-        self.actionUpdate_Existing_Charges.setText(
-            _translate("MainWindow", "Update Existing Charges")
-        )
-        self.actionUpdate_From_File_2.setText(
-            _translate("MainWindow", "Update From File")
-        )
-        self.actionAdd_New_Price.setText(_translate("MainWindow", "Add New Price"))
-        self.actionUpdate_Existing_Price.setText(
-            _translate("MainWindow", "Update Existing Price")
-        )
-        self.actionUpdate_From_File_3.setText(
-            _translate("MainWindow", "Update From File")
-        )
-        self.actionAbout.setText(_translate("MainWindow", "About"))
+    def default_label_values(self):
+        """Clear all values in labels"""
+
+        self.label_Vstitch.setText("--")
+        self.label_Vprint.setText("--")
+        self.label_Vmc.setText("--")
+        self.label_Vcop.setText("--")
+        self.label_Vmrp.setText("--")
+        self.label_Vbasic.setText("--")
+        self.label_Vnetm.setText("--")
+        self.label_Vnetm.setStyleSheet("color : black;border:0px;")
 
 
 if __name__ == "__main__":
     import sys
 
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle("Fusion")
     MainWindow = QtWidgets.QMainWindow()
     ui = Ui_MainWindow()
     ui.setupUi(MainWindow)
