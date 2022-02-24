@@ -1,8 +1,8 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
-from core.calculate_bom import BillOfMaterial
 from pandas import DataFrame
 
+from core.calculate_bom import BillOfMaterial
 from core.cost_analysis import calculateProfit, generate_bulk_report
 from core.create_excel_report import ExcelReporting
 from database import sql_db
@@ -742,8 +742,9 @@ class Ui_MainWindow(object):
                 '<html><head><meta name="qrichtext" content="1" /><style type="text/css">\n'
                 "p, li { white-space: pre-wrap; }\n"
                 "</style></head><body style=\" font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;\">\n"
-                '<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-family:\'Slack-Lato,appleLogo,sans-serif\'; color:#000000;">( ＾∇＾)</span><span style=" font-size:10pt;"> Specially deddicated to </span><span style=" font-size:10pt; font-weight:600; color:#5555ff;">Manaf K N </span><span style=" font-size:10pt; font-weight:600; color:#000000;">- UMC</span></p>\n'
-                '<p style="-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><br /></p>\n'
+                # '<p align="center" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-family:\'Slack-Lato,appleLogo,sans-serif\'; color:#000000;">( ＾∇＾)</span><span style=" font-size:10pt;"> Specially deddicated to </span><span style=" font-size:10pt; font-weight:600; color:#5555ff;">Manaf K N </span><span style=" font-size:10pt; font-weight:600; color:#000000;">- UMC</span></p>\n'
+                # '<p style="-qt-paragraph-type:empty; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><br /></p>\n'
+                "<br/><br/><br/>\n"
                 '<p align="right" style=" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"><span style=" font-size:10pt; font-style:italic; background-color:#ffffff;">Made with </span><span style=" font-family:\'apple color emoji,segoe ui emoji,noto color emoji,android emoji,emojisymbols,emojione mozilla,twemoji mozilla,segoe ui symbol\'; font-size:10pt; color:#ff0000; background-color:#ffffff;">❤️</span><span style=" font-size:10pt; font-style:italic; background-color:#ffffff;"> from </span><span style=" font-size:10pt; font-weight:600; font-style:italic; background-color:#ffffff;">OM</span><span style=" font-size:10pt; font-style:italic; background-color:#ffffff;"> Dept - Fortune Branch </span></p></body></html>',
             )
         )

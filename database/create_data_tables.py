@@ -23,7 +23,7 @@ from . import (
 )  # ,SQL_CONN
 
 
-def createBomArticleTable():
+def createBomArticleTable(bom_dir: str, item_dir: str, window) -> tuple[bool, str]:
     """
     Create or re-create(if exists) tables "bom" and "article" in database.
 
@@ -37,22 +37,44 @@ def createBomArticleTable():
 
     Excel file with name "materials" required with columns:
         -  item no
+        -  mrp
         -  foreign name
         -  no of pairs
+        -  product type
         -  inventory uom
+        -  last purchase price
 
     """
 
     bom_df = pd.DataFrame()
     item_df = pd.DataFrame()
-    bom_dir = "data/Bom Hierarchy final.xlsx"
-    item_dir = "data/materials.xlsx"
+
+    bom_mandatory_cols = [
+        "father",
+        "father_name",
+        "child",
+        "child_qty",
+        "process",
+        "process_order",
+    ]
+    items_mandatory_cols = [
+        "item_no",
+        "foreign_name",
+        "mrp",
+        "no_of_pairs",
+        "inventory_uom",
+        "product_type",
+        "last_purchase_price",
+    ]
+    progress_fail_style = "QProgressBar::chunk{background-color:#db1212;margin:1px}QProgressBar{text-align:center;border-radius: 2px;border: 1px solid red;}"
 
     try:
         with warnings.catch_warnings(record=True):
             warnings.simplefilter("always")
             bom_df = pd.read_excel(bom_dir, engine="openpyxl")
+            window.progressBar.setProperty("value", 28)  # Updating progress bar
             item_df = pd.read_excel(item_dir, engine="openpyxl")
+            window.progressBar.setProperty("value", 41)  # Updating progress bar
 
     except FileNotFoundError:
         print("File not found")
@@ -67,7 +89,7 @@ def createBomArticleTable():
     if item_df.empty and bom_df.empty:
         print("No data found")
         return (False, "Empty files")
-
+    window.progressBar.setProperty("value", 45)  # Updating progress bar
     # Clean Up dataframes
     bom_df.columns = (
         bom_df.columns.str.strip()
@@ -81,6 +103,19 @@ def createBomArticleTable():
         .str.replace(" ", "_")
         .str.replace(r"[\./]", "", regex=True)
     )
+
+    # Checking all required columns exists in the file
+    if not all(e in bom_df.columns for e in bom_mandatory_cols):
+        print("Missing required columns in bom file")
+        window.progressBar.setStyleSheet(progress_fail_style)
+        return (False, "Missing required columns in bom file")
+
+    if not all(e in item_df.columns for e in items_mandatory_cols):
+        print("Missing required columns in materials file")
+        window.progressBar.setStyleSheet(progress_fail_style)
+        return (False, "Missing required columns in materials file")
+
+    window.progressBar.setProperty("value", 48)  # Updating progress bar
     bom_df["father_name"] = bom_df["father_name"].apply(
         lambda x: x.replace("--", "-").replace("  ", " ").strip().lower()
     )
@@ -99,7 +134,7 @@ def createBomArticleTable():
         "child_type",
         "application",
     ]
-
+    window.progressBar.setProperty("value", 51)  # Updating progress bar
     # Merging item master with bom heirarchy
     bom_df = bom_df.merge(
         item_df[["item_no", "foreign_name", "inventory_uom", "last_purchase_price"]],
@@ -109,12 +144,13 @@ def createBomArticleTable():
     )
 
     bom_df = bom_df.merge(
-        item_df[["item_no", "item_mrp", "product_type", "no_of_pairs"]],
+        item_df[["item_no", "mrp", "product_type", "no_of_pairs"]],
         how="left",
         left_on="father",
         right_on="item_no",
     )
     bom_df.columns = [changeColumnName(name) for name in bom_df.columns.values]
+    window.progressBar.setProperty("value", 58)  # Updating progress bar
     # Creating article list dataframe before further modification
     art_df = bom_df[bom_df.process_order == 1][
         ["father", "father_name", "product_type", "mrp", "no_of_pairs"]
@@ -182,9 +218,9 @@ def createBomArticleTable():
         + "-"
         + art_df.category_code.str.upper()
     )
-
+    window.progressBar.setProperty("value", 69)  # Updating progress bar
     query_clean_bom_articles()
-
+    window.progressBar.setProperty("value", 74)  # Updating progress bar
     bom_df.to_sql(
         SQL_T_BOM,
         con=engine,
@@ -192,12 +228,14 @@ def createBomArticleTable():
         index=True,
         index_label="bom_id",
     )
+    window.progressBar.setProperty("value", 86)  # Updating progress bar
     art_df.to_sql(
         SQL_T_ARTICLE,
         con=engine,
         if_exists="append",
         index=False,
     )
+    window.progressBar.setProperty("value", 100)  # Updating progress bar
 
     return (True, "Success")
 
@@ -298,7 +336,6 @@ def changeColumnName(name) -> str:
     return {
         "foreign_name": "child_item",
         "inventory_uom": "child_uom",
-        "item_mrp": "mrp",
         "last_purchase_price": "child_rate",
     }.get(name, name)
 
