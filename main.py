@@ -8,6 +8,8 @@ from core.utils.create_excel_report import ExcelReporting
 from database import sql_db
 from database.sql_db import PriceStructure, OSCharges, Article
 from windows.window_create_bom import WindowCreateBom
+from windows.window_create_osc import WindowCreateOsCharges
+from windows.window_create_ps import WindowCreatePriceStructure
 
 
 class Ui_MainWindow(object):
@@ -705,6 +707,8 @@ class Ui_MainWindow(object):
 
         # Menu items
         self.actionCreateBom.triggered.connect(self.menu_create_bom)
+        self.actionCreateOsCharges.triggered.connect(self.menu_create_osc)
+        self.actionCreatePriceStructure.triggered.connect(self.menu_create_ps)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -971,11 +975,35 @@ class Ui_MainWindow(object):
         if self.menu_items.get("create_bom", None) is None:
             self.menu_items["create_bom"] = WindowCreateBom()
             self.menu_items["create_bom"].show()
-            self.menu_items["create_bom"].close_window.connect(self.close_bom_menu)
+            self.menu_items["create_bom"].close_window.connect(
+                self.close_create_bom_menu
+            )
 
-    def close_bom_menu(self):
+    def close_create_bom_menu(self):
         if self.menu_items.get("create_bom", None) != None:
             self.menu_items["create_bom"] = None
+
+    def menu_create_osc(self):
+        if self.menu_items.get("create_osc", None) is None:
+            self.menu_items["create_osc"] = WindowCreateOsCharges()
+            self.menu_items["create_osc"].show()
+            self.menu_items["create_osc"].close_window.connect(
+                self.close_create_osc_menu
+            )
+
+    def close_create_osc_menu(self):
+        if self.menu_items.get("create_osc", None) != None:
+            self.menu_items["create_osc"] = None
+
+    def menu_create_ps(self):
+        if self.menu_items.get("create_ps", None) is None:
+            self.menu_items["create_ps"] = WindowCreatePriceStructure()
+            self.menu_items["create_ps"].show()
+            self.menu_items["create_ps"].close_window.connect(self.close_create_ps_menu)
+
+    def close_create_ps_menu(self):
+        if self.menu_items.get("create_ps", None) != None:
+            self.menu_items["create_ps"] = None
 
     def default_label_values(self):
         """Clear all values in labels"""

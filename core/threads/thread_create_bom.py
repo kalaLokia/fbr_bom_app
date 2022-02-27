@@ -1,20 +1,11 @@
-import typing
 import warnings
-from PyQt6 import QtCore
-import pandas as pd
-from database.database import engine
-from database.sql_db import (
-    query_clean_os_charges,
-    query_clean_bom_articles,
-    query_clean_price_structure,
-)
 
-from database import (
-    SQL_T_BOM,
-    SQL_T_ARTICLE,
-    SQL_T_PRICE_STRUCTURE,
-    SQL_T_CHARGES,
-)
+import pandas as pd
+from PyQt6 import QtCore
+
+from database import SQL_T_BOM, SQL_T_ARTICLE
+from database.database import engine
+from database.sql_db import query_clean_bom_articles
 
 
 class WorkerThreadBom(QtCore.QThread):
@@ -25,9 +16,7 @@ class WorkerThreadBom(QtCore.QThread):
     update_progress = QtCore.pyqtSignal(int)
     completed = QtCore.pyqtSignal(bool, str)
 
-    def __init__(
-        self, path_bom, path_items, parent: typing.Optional[QtCore.QObject] = None
-    ) -> None:
+    def __init__(self, path_bom, path_items) -> None:
         super(QtCore.QThread, self).__init__()
 
         self.path_bom = path_bom

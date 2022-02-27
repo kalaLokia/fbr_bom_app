@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>DialogUpdateFromFile</class>
+ <widget class="QWidget" name="DialogUpdateFromFile">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Update OS Charges</string>
   </property>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
@@ -24,7 +24,7 @@
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout_2">
     <item>
-     <widget class="QLineEdit" name="text_filepath"/>
+     <widget class="QLineEdit" name="text_file_path"/>
     </item>
     <item>
      <widget class="QPushButton" name="btn_choose_file">
@@ -41,12 +41,12 @@
     </item>
    </layout>
   </widget>
-  <widget class="QLabel" name="label">
+  <widget class="QLabel" name="label_item">
    <property name="geometry">
     <rect>
      <x>30</x>
      <y>20</y>
-     <width>61</width>
+     <width>181</width>
      <height>16</height>
     </rect>
    </property>
@@ -105,12 +105,12 @@
     <enum>Qt::Horizontal</enum>
    </property>
   </widget>
-  <widget class="QLabel" name="label_2">
+  <widget class="QLabel" name="label_info">
    <property name="geometry">
     <rect>
      <x>20</x>
      <y>140</y>
-     <width>341</width>
+     <width>391</width>
      <height>16</height>
     </rect>
    </property>
