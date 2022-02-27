@@ -10,6 +10,7 @@ from database.sql_db import PriceStructure, OSCharges, Article
 from windows.window_create_bom import WindowCreateBom
 from windows.window_create_osc import WindowCreateOsCharges
 from windows.window_create_ps import WindowCreatePriceStructure
+from windows.window_manage_osc import WindowManageOsCharges
 
 
 class Ui_MainWindow(object):
@@ -40,7 +41,7 @@ class Ui_MainWindow(object):
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
         self.filter_proxy_model.setSourceModel(self.model)
         self.filter_proxy_model.setFilterCaseSensitivity(
-            QtCore.Qt.CaseSensitivity.CaseInsensitive
+            Qt.CaseSensitivity.CaseInsensitive
         )
         self.filter_proxy_model.setFilterKeyColumn(0)
         self.is_all_selected = False
@@ -709,6 +710,7 @@ class Ui_MainWindow(object):
         self.actionCreateBom.triggered.connect(self.menu_create_bom)
         self.actionCreateOsCharges.triggered.connect(self.menu_create_osc)
         self.actionCreatePriceStructure.triggered.connect(self.menu_create_ps)
+        self.actionUpdateOsCharges.triggered.connect(self.menu_manage_osc)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -1000,6 +1002,18 @@ class Ui_MainWindow(object):
             self.menu_items["create_ps"] = WindowCreatePriceStructure()
             self.menu_items["create_ps"].show()
             self.menu_items["create_ps"].close_window.connect(self.close_create_ps_menu)
+
+    def menu_manage_osc(self):
+        if self.menu_items.get("manage_osc", None) is None:
+            self.menu_items["manage_osc"] = WindowManageOsCharges()
+            self.menu_items["manage_osc"].show()
+            self.menu_items["manage_osc"].close_window.connect(
+                self.close_manage_osc_menu
+            )
+
+    def close_manage_osc_menu(self):
+        if self.menu_items.get("manage_osc", None) != None:
+            self.menu_items["manage_osc"] = None
 
     def close_create_ps_menu(self):
         if self.menu_items.get("create_ps", None) != None:

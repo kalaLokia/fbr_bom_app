@@ -2,21 +2,18 @@
 SQL queries execution
 
 """
+
 from typing import Union
+
 import pandas as pd
-import sqlalchemy as sa
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
 from .database import Bom, Article, OSCharges, PriceStructure, engine, FixedRates
 from . import SQL_DB_NAME, SQL_T_BOM
 
-# engine = sa.create_engine(SQL_CONN, echo=False, connect_args={"timeout": 5})
 
 Session = sessionmaker(bind=engine)
-
-# SELECT * FROM tbl_articles
-# INNER JOIN tbl_price_structure ps ON ps.price_structure = tbl_articles.price_structure  AND ps.mrp = tbl_articles.mrp
 
 
 def query_clean_os_charges():
@@ -80,28 +77,23 @@ def query_list_articles_all():
     return result
 
 
-def query_articles_all():
-    """List all articles"""
+def query_fetch_all_os_charges() -> list[OSCharges]:
+    """Fetch all os charges data"""
+    result = None
+    with Session() as s:
+        result = s.query(OSCharges).order_by(OSCharges.article).all()
+    return result
+
+
+def query_fetch_all_price_structure() -> list[PriceStructure]:
+    """Fetch all price structure data"""
     result = None
     with Session() as s:
         result = (
-            s.query(Article, PriceStructure, OSCharges)
-            .join(
-                PriceStructure,
-                (PriceStructure.ps_code == Article.ps_code)
-                & (PriceStructure.mrp == Article.mrp),
-                isouter=True,
-                full=False,
-            )
-            .join(
-                OSCharges,
-                OSCharges.article == Article.article_code,
-                isouter=True,
-                full=False,
-            )
+            s.query(PriceStructure)
+            .order_by(PriceStructure.ps_code, PriceStructure.mrp)
             .all()
         )
-
     return result
 
 
@@ -185,3 +177,66 @@ def query_setup_charges_table():
             s.commit()
     except Exception as e:
         print(e)
+
+
+# Create,Update,Delete
+def query_add_os_charge(obj: OSCharges) -> tuple[bool, str]:
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                s.add(obj)
+                s.commit()
+                response = (True, f'Os Charges for "{obj.article}" saved successfully.')
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
+
+
+def query_update_os_charge(obj: OSCharges) -> tuple[bool, str]:
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                update_obj: OSCharges = (
+                    s.query(OSCharges).filter(OSCharges.article == obj.article).one()
+                )
+                update_obj.print_rate = obj.printing
+                update_obj.stitch_rate = obj.stitching
+                s.commit()
+                response = (
+                    True,
+                    f'Os Charges for "{obj.article}" updated successfully.',
+                )
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
+
+
+def query_delete_os_charges(items: list[str]) -> tuple[bool, str]:
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                query = s.query(OSCharges).filter(OSCharges.article.in_(items))
+                query.delete(synchronize_session=False)
+                s.commit()
+                response = (
+                    True,
+                    f"Successfully removed {len(items)} items from database.",
+                )
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
