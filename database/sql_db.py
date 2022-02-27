@@ -4,7 +4,7 @@ SQL queries execution
 """
 
 from typing import Union
-
+import sqlalchemy as sa
 import pandas as pd
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
@@ -179,7 +179,7 @@ def query_setup_charges_table():
         print(e)
 
 
-# Create,Update,Delete
+# Create, Update, Delete
 def query_add_os_charge(obj: OSCharges) -> tuple[bool, str]:
     response = (False, "Unknown Error")
     try:
@@ -232,6 +232,86 @@ def query_delete_os_charges(items: list[str]) -> tuple[bool, str]:
                 response = (
                     True,
                     f"Successfully removed {len(items)} items from database.",
+                )
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
+
+
+def query_add_pstructure(obj: PriceStructure) -> tuple[bool, str]:
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                s.add(obj)
+                s.commit()
+                response = (
+                    True,
+                    f'Price Structure "{obj.unique_code}" added successfully.',
+                )
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
+
+
+def query_update_pstructure(obj: PriceStructure) -> tuple[bool, str]:
+    """Updates only basic rate"""
+
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                update_obj: PriceStructure = (
+                    s.query(PriceStructure)
+                    .filter(
+                        sa.and_(
+                            PriceStructure.ps_code == obj.ps_code,
+                            PriceStructure.mrp == obj.mrp,
+                        )
+                    )
+                    .one()
+                )
+                update_obj.basic = obj.basic
+                s.commit()
+                response = (
+                    True,
+                    f'Basic rate for "{obj.unique_code}" updated successfully.',
+                )
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
+
+
+def query_delete_pstructure(obj: PriceStructure) -> tuple[bool, str]:
+    """Delete only one Price Structure"""
+
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                query = s.query(PriceStructure).filter(
+                    sa.and_(
+                        PriceStructure.ps_code == obj.ps_code,
+                        PriceStructure.mrp == obj.mrp,
+                    )
+                )
+                query.delete(synchronize_session=False)
+                s.commit()
+                response = (
+                    True,
+                    f"Successfully removed {obj.unique_code} from Price Structure.",
                 )
             except Exception as e:
                 s.rollback()

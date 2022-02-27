@@ -111,6 +111,23 @@ class PriceStructure(Base):
     mrp = sa.Column(sa.FLOAT(2))
     basic = sa.Column(sa.FLOAT(2))
 
+    @property
+    def get_price_struct(self):
+        return (
+            {"p": "pride", "d": "debongo", "s": "stile"}
+            .get(self.ps_code.lower(), "pride")
+            .title()
+        )
+
+    def to_ps_code(self, text: str):
+        self.ps_code = {"pride": "P", "debongo": "D", "stile": "S"}.get(
+            text.strip().lower(), "P"
+        )
+
+    @property
+    def unique_code(self):
+        return f"{self.get_price_struct}-{self.mrp}"
+
     __table_args__ = (
         PrimaryKeyConstraint(ps_code, mrp),
         {},

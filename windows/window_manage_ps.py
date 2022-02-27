@@ -1,26 +1,25 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 
-
-from ui.ui_manage_osc import Ui_DialogManageOSC
+from database.database import PriceStructure
 from database.sql_db import (
-    query_fetch_all_os_charges,
-    query_add_os_charge,
-    query_update_os_charge,
-    query_delete_os_charges,
+    query_add_pstructure,
+    query_delete_pstructure,
+    query_fetch_all_price_structure,
+    query_update_pstructure,
 )
-from database.database import OSCharges
+from ui.ui_manage_ps import Ui_DialogManagePS
 
 QtCore.QDir.addSearchPath("icons", "icons")
 
 
-class WindowManageOsCharges(QtWidgets.QWidget):
+class WindowManagePriceStructure(QtWidgets.QWidget):
 
     close_window = QtCore.pyqtSignal()
 
     def __init__(self):
         super().__init__()
-        self.ui = Ui_DialogManageOSC()
+        self.ui = Ui_DialogManagePS()
         self.ui.setupUi(self)
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
         self.refreshDataModel()
@@ -45,38 +44,46 @@ class WindowManageOsCharges(QtWidgets.QWidget):
         )
         self.ui.tv_filter_box.clicked.connect(self.eventTableSingleClicked)
         self.ui.tv_filter_box.doubleClicked.connect(self.eventTableDoubleClicked)
-        self.ui.text_article.textChanged.connect(self.eventArticleChanged)
+        self.ui.text_mrp.textChanged.connect(self.eventMrpChanged)
         self.ui.tv_filter_box.selectionModel().selectionChanged.connect(
             self.eventTableSelectionChanged
         )
+        self.ui.combo_structure.currentTextChanged.connect(self.eventComboChanged)
         self.ui.btn_close.clicked.connect(self.closeDialogWindow)
         self.ui.btn_save.clicked.connect(self.saveNewRecord)
         self.ui.btn_update.clicked.connect(self.updateRecord)
         self.ui.btn_delete.clicked.connect(self.deleteRecord)
 
     def refreshDataModel(self):
-        self.os_charges = query_fetch_all_os_charges()
-        self.articles = [e.article for e in self.os_charges]
-        self.model = QtGui.QStandardItemModel(len(self.os_charges), 3)
-        self.model.setHorizontalHeaderLabels(["Article", "Printing", "Stitching"])
-        for row, osc in enumerate(self.os_charges):
-            article = QtGui.QStandardItem(osc.article)
-            print_rate = QtGui.QStandardItem(str(osc.printing))
-            stitch_rate = QtGui.QStandardItem(str(osc.stitching))
-            print_rate.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            stitch_rate.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.model.setItem(row, 0, article)
-            self.model.setItem(row, 1, print_rate)
-            self.model.setItem(row, 2, stitch_rate)
+        self.pstructures = query_fetch_all_price_structure()
+        self.ps_uniques = {}
+        self.model = QtGui.QStandardItemModel(len(self.pstructures), 2)
+        self.model.setHorizontalHeaderLabels(["Price Structure", "Basic Rate"])
+        for row, ps in enumerate(self.pstructures):
+            self.ps_uniques[ps.unique_code] = ps
+            pstructure = QtGui.QStandardItem(ps.unique_code)
+            basic = QtGui.QStandardItem(str(ps.basic))
+            basic.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            self.model.setItem(row, 0, pstructure)
+            self.model.setItem(row, 1, basic)
 
         self.filter_proxy_model.setSourceModel(self.model)
 
     def closeDialogWindow(self):
         self.close_window.emit()
-        # QtCore.QCoreApplication.instance().quit()
 
-    def eventArticleChanged(self, text):
-        if text.strip().upper() in self.articles:
+    def eventMrpChanged(self, text):
+        key = "{}-{}".format(self.ui.combo_structure.currentText(), text)
+        if key in self.ps_uniques.keys():
+            self.ui.btn_save.setEnabled(False)
+            self.ui.btn_update.setEnabled(True)
+        else:
+            self.ui.btn_update.setEnabled(False)
+            self.ui.btn_save.setEnabled(True)
+
+    def eventComboChanged(self, value):
+        key = "{}-{}".format(value, self.ui.text_mrp.text())
+        if key in self.ps_uniques.keys():
             self.ui.btn_save.setEnabled(False)
             self.ui.btn_update.setEnabled(True)
         else:
@@ -87,10 +94,11 @@ class WindowManageOsCharges(QtWidgets.QWidget):
         self.clearTextBoxValues()
 
     def eventTableDoubleClicked(self, modelIndex: QtCore.QModelIndex):
-        row = modelIndex.row()
-        self.ui.text_article.setText(self.os_charges[row].article)
-        self.ui.text_print_rate.setText(str(self.os_charges[row].printing))
-        self.ui.text_stitch_rate.setText(str(self.os_charges[row].stitching))
+        key = self.model.index(modelIndex.row(), 0).data()
+
+        self.ui.text_mrp.setText(str(self.ps_uniques[key].mrp))
+        self.ui.text_basic.setText(str(self.ps_uniques[key].basic))
+        self.ui.combo_structure.setCurrentText(self.ps_uniques[key].get_price_struct)
 
     def eventTableSelectionChanged(
         self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection
@@ -108,29 +116,28 @@ class WindowManageOsCharges(QtWidgets.QWidget):
 
     def clearTextBoxValues(self):
         """Clear all values in text boxes and disable buttons"""
-        self.ui.text_article.setText("")
-        self.ui.text_print_rate.setText("")
-        self.ui.text_stitch_rate.setText("")
+        self.ui.text_mrp.setText("")
+        self.ui.text_basic.setText("")
         self.ui.btn_update.setEnabled(False)
         self.ui.btn_save.setEnabled(False)
 
     def updateRecord(self):
         """Update existing record in the database"""
         # Button active only if it is existing in loaded models
-        osc = OSCharges()
-        osc.article = self.ui.text_article.text()
+        ps = PriceStructure()
+        ps.to_ps_code(self.ui.combo_structure.currentText())
         try:
-            osc.print_rate = float(self.ui.text_print_rate.text())
-            osc.stitch_rate = float(self.ui.text_stitch_rate.text())
+            ps.mrp = float(self.ui.text_mrp.text())
+            ps.basic = float(self.ui.text_basic.text())
         except:
             self.eventAlertDialog("Invalid data!", "Only digits are allowed!")
             return
 
         confirm = self.eventConfirmationDialog(
-            f"You are going to update values for {osc.article}.\n\nDo you want to proceed ?"
+            f"You are going to update values for {ps.unique_code}.\n\nDo you want to proceed ?"
         )
         if confirm:
-            status, res = query_update_os_charge(osc)
+            status, res = query_update_pstructure(ps)
             if status:
                 self.refreshDataModel()
                 self.clearTextBoxValues()
@@ -140,20 +147,22 @@ class WindowManageOsCharges(QtWidgets.QWidget):
 
     def saveNewRecord(self):
         """Save new record in the database"""
-        osc = OSCharges()
-        osc.article = self.ui.text_article.text()
+
+        ps = PriceStructure()
+        ps.to_ps_code(self.ui.combo_structure.currentText())
+
         try:
-            osc.print_rate = float(self.ui.text_print_rate.text())
-            osc.stitch_rate = float(self.ui.text_stitch_rate.text())
+            ps.mrp = float(self.ui.text_mrp.text())
+            ps.basic = float(self.ui.text_basic.text())
         except:
             self.eventAlertDialog("Invalid data!", "Only digits are allowed!")
             return
 
         confirm = self.eventConfirmationDialog(
-            f"You are going to add new Os Charge for {osc.article}.\n\nDo you want to proceed ?"
+            f"You are going to add new Price Structure {ps.unique_code}.\n\nDo you want to proceed ?"
         )
         if confirm:
-            status, res = query_add_os_charge(osc)
+            status, res = query_add_pstructure(ps)
             if status:
                 self.refreshDataModel()
                 self.clearTextBoxValues()
@@ -163,20 +172,29 @@ class WindowManageOsCharges(QtWidgets.QWidget):
 
     def deleteRecord(self):
         """Delete existing record in the database"""
+
         selections = self.ui.tv_filter_box.selectedIndexes()
-        rows = list(set(selection.row() for selection in selections))
-        if len(rows) > 1:
-            confirm = self.eventConfirmationDialog(
-                f"You are going to remove {len(rows)} records from the database, this cannot be undone later.\n\nDo you want to proceed anyway?"
+        pss = list(
+            set(
+                self.ps_uniques[self.model.index(selection.row(), 0).data()]
+                for selection in selections
             )
+        )
+        if len(pss) > 1:
+            confirm = False
+            self.eventAlertDialog(
+                "Sorry, little Confused!",
+                "Please select only one item, I cannot delete multiple price structures together.",
+            )
+            return
         else:
             confirm = self.eventConfirmationDialog(
-                f"You are going to remove {self.os_charges[rows[-1]].article} from database, this cannot be reverted back later.\n\nDo you want to proceed?"
+                f"You are going to remove {pss[-1].unique_code} from database.\n\nDo you want to proceed?"
             )
 
         if confirm:
-            list_items = [self.os_charges[row].article for row in rows]
-            status, res = query_delete_os_charges(list_items)
+            ps = pss[-1]
+            status, res = query_delete_pstructure(ps)
             if status:
                 self.refreshDataModel()
                 self.clearTextBoxValues()
