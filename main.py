@@ -2,11 +2,12 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 from pandas import DataFrame
 
-from core.calculate_bom import BillOfMaterial
-from core.cost_analysis import calculateProfit, generate_bulk_report
-from core.create_excel_report import ExcelReporting
+from core.utils.calculate_bom import BillOfMaterial
+from core.utils.cost_analysis import calculateProfit, generate_bulk_report
+from core.utils.create_excel_report import ExcelReporting
 from database import sql_db
 from database.sql_db import PriceStructure, OSCharges, Article
+from windows.window_create_bom import WindowCreateBom
 
 
 class Ui_MainWindow(object):
@@ -14,7 +15,7 @@ class Ui_MainWindow(object):
 
     def __init__(self) -> None:
         super().__init__()
-
+        self.menu_items = {}
         articles = sql_db.query_list_articles_all()
         self.fixed_rates = sql_db.query_fetch_fixed_rates()
         self.model = QtGui.QStandardItemModel(len(articles), 1)
@@ -664,50 +665,46 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
         self.actionClose = QtGui.QAction(MainWindow)
         self.actionClose.setObjectName("actionClose")
-        self.actionUpdate_From_File = QtGui.QAction(MainWindow)
-        self.actionUpdate_From_File.setObjectName("actionUpdate_From_File")
-        self.actionAdd_New_Charges = QtGui.QAction(MainWindow)
-        self.actionAdd_New_Charges.setObjectName("actionAdd_New_Charges")
+        self.actionCreateBom = QtGui.QAction(MainWindow)
+        self.actionCreateBom.setObjectName("actionCreateBom")
         self.actionUpdate_Existing_Charges = QtGui.QAction(MainWindow)
         self.actionUpdate_Existing_Charges.setObjectName(
             "actionUpdate_Existing_Charges"
         )
-        self.actionUpdate_From_File_2 = QtGui.QAction(MainWindow)
-        self.actionUpdate_From_File_2.setObjectName("actionUpdate_From_File_2")
-        self.actionAdd_New_Price = QtGui.QAction(MainWindow)
-        self.actionAdd_New_Price.setObjectName("actionAdd_New_Price")
         self.actionUpdate_Existing_Price = QtGui.QAction(MainWindow)
         self.actionUpdate_Existing_Price.setObjectName("actionUpdate_Existing_Price")
-        self.actionUpdate_From_File_3 = QtGui.QAction(MainWindow)
-        self.actionUpdate_From_File_3.setObjectName("actionUpdate_From_File_3")
         self.actionAbout = QtGui.QAction(MainWindow)
         self.actionAbout.setObjectName("actionAbout")
-        self.actionOS_Charges = QtGui.QAction(MainWindow)
-        self.actionOS_Charges.setObjectName("actionOS_Charges")
-        self.actionPrice_Structure = QtGui.QAction(MainWindow)
-        self.actionPrice_Structure.setObjectName("actionPrice_Structure")
-        self.actionOS_Charges_2 = QtGui.QAction(MainWindow)
-        self.actionOS_Charges_2.setObjectName("actionOS_Charges_2")
-        self.actionPrice_Structure_2 = QtGui.QAction(MainWindow)
-        self.actionPrice_Structure_2.setObjectName("actionPrice_Structure_2")
+        self.actionUpdateOsCharges = QtGui.QAction(MainWindow)
+        self.actionUpdateOsCharges.setObjectName("actionUpdateOsCharges")
+        self.actionUpdatePriceStructure = QtGui.QAction(MainWindow)
+        self.actionUpdatePriceStructure.setObjectName("actionUpdatePriceStructure")
+        self.actionCreateOsCharges = QtGui.QAction(MainWindow)
+        self.actionCreateOsCharges.setObjectName("actionCreateOsCharges")
+        self.actionCreatePriceStructure = QtGui.QAction(MainWindow)
+        self.actionCreatePriceStructure.setObjectName("actionCreatePriceStructure")
         self.menuFile.addAction(self.actionClose)
-        self.menuBom.addAction(self.actionUpdate_From_File)
-        self.menuBom.addAction(self.actionOS_Charges_2)
-        self.menuBom.addAction(self.actionPrice_Structure_2)
-        self.menuDatabase.addAction(self.actionOS_Charges)
-        self.menuDatabase.addAction(self.actionPrice_Structure)
+        self.menuBom.addAction(self.actionCreateBom)
+        self.menuBom.addAction(self.actionCreateOsCharges)
+        self.menuBom.addAction(self.actionCreatePriceStructure)
+        self.menuDatabase.addAction(self.actionUpdateOsCharges)
+        self.menuDatabase.addAction(self.actionUpdatePriceStructure)
         self.menuDatabase.addAction(self.menuBom.menuAction())
         self.menuHelp.addAction(self.actionAbout)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuDatabase.menuAction())
         self.menubar.addAction(self.menuHelp.menuAction())
 
-        # Button Functionality for showing stats
+        # Core Functionalities
+        self.progressBar.hide()
         self.button_show_stats.clicked.connect(self.buttonShow)
         self.button_export_xl.clicked.connect(self.buttonExport)
         self.button_export_summary.clicked.connect(self.buttonExportSummaryReport)
         # TODO: Create new method
         self.button_export_xl_sub.clicked.connect(self.buttonExport)
+
+        # Menu items
+        self.actionCreateBom.triggered.connect(self.menu_create_bom)
 
         self.retranslateUi(MainWindow)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
@@ -753,28 +750,24 @@ class Ui_MainWindow(object):
         self.menuBom.setTitle(_translate("MainWindow", "Re-create Tables"))
         self.menuHelp.setTitle(_translate("MainWindow", "Help"))
         self.actionClose.setText(_translate("MainWindow", "Close"))
-        self.actionUpdate_From_File.setText(_translate("MainWindow", "Bom"))
-        self.actionAdd_New_Charges.setText(_translate("MainWindow", "Add New Charges"))
+        self.actionCreateBom.setText(_translate("MainWindow", "Bom"))
         self.actionUpdate_Existing_Charges.setText(
             _translate("MainWindow", "Update Existing Charges")
         )
-        self.actionUpdate_From_File_2.setText(
-            _translate("MainWindow", "Update From File")
-        )
-        self.actionAdd_New_Price.setText(_translate("MainWindow", "Add New Price"))
+
         self.actionUpdate_Existing_Price.setText(
             _translate("MainWindow", "Update Existing Price")
         )
-        self.actionUpdate_From_File_3.setText(
-            _translate("MainWindow", "Update From File")
-        )
+
         self.actionAbout.setText(_translate("MainWindow", "About"))
-        self.actionOS_Charges.setText(_translate("MainWindow", "Manage OS Charges"))
-        self.actionPrice_Structure.setText(
+        self.actionUpdateOsCharges.setText(
+            _translate("MainWindow", "Manage OS Charges")
+        )
+        self.actionUpdatePriceStructure.setText(
             _translate("MainWindow", "Manage Price Structure")
         )
-        self.actionOS_Charges_2.setText(_translate("MainWindow", "OS Charges"))
-        self.actionPrice_Structure_2.setText(
+        self.actionCreateOsCharges.setText(_translate("MainWindow", "OS Charges"))
+        self.actionCreatePriceStructure.setText(
             _translate("MainWindow", "Price Structure")
         )
 
@@ -972,6 +965,17 @@ class Ui_MainWindow(object):
                 generate_bulk_report(df, self.fixed_rates)
         else:
             print("Required minimum number of articles is 20 to get the report.")
+
+    # Menu item dialogs
+    def menu_create_bom(self):
+        if self.menu_items.get("create_bom", None) is None:
+            self.menu_items["create_bom"] = WindowCreateBom()
+            self.menu_items["create_bom"].show()
+            self.menu_items["create_bom"].close_window.connect(self.close_bom_menu)
+
+    def close_bom_menu(self):
+        if self.menu_items.get("create_bom", None) != None:
+            self.menu_items["create_bom"] = None
 
     def default_label_values(self):
         """Clear all values in labels"""
