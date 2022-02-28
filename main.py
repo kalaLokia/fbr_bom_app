@@ -1,3 +1,11 @@
+# FIXME: Handle SQL exceptions; especially for create, update and delete
+# TODO: Introduce Alert, Confirmation dialogs in home screen
+# TODO: UI for fixed rates modifications
+# TODO: Handle multiple button click in a sec (timer | dialog)
+# TODO: Write module level descriptions
+# TODO: Create readme
+# TODO: Create packaging notes
+import os, sys
 from pandas import DataFrame
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
@@ -13,6 +21,17 @@ from windows.window_create_osc import WindowCreateOsCharges
 from windows.window_create_ps import WindowCreatePriceStructure
 from windows.window_manage_osc import WindowManageOsCharges
 from windows.window_manage_ps import WindowManagePriceStructure
+
+
+BASE_DIR = os.path.dirname(__file__)
+
+try:
+    from ctypes import windll  # Only exists on Windows.
+
+    myappid = "kalalokia.fortune_br.bom_app"
+    windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+except ImportError:
+    pass
 
 
 class WindowHomeScreen(QtWidgets.QMainWindow):
@@ -356,10 +375,10 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
 
 
 if __name__ == "__main__":
-    import sys
 
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
+    app.setWindowIcon(QtGui.QIcon(os.path.join(BASE_DIR, "icons", "logo.ico")))
     MainWindow = WindowHomeScreen()
     MainWindow.show()
     sys.exit(app.exec())

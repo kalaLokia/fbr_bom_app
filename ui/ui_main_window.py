@@ -10,7 +10,7 @@ class Ui_MainWindow(object):
         MainWindow.setFont(font)
         icon = QtGui.QIcon()
         icon.addPixmap(
-            QtGui.QPixmap("ui\\icons/favicon.ico"),
+            QtGui.QPixmap("icons/favicon.ico"),
             QtGui.QIcon.Mode.Normal,
             QtGui.QIcon.State.Off,
         )
