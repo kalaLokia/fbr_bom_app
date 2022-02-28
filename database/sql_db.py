@@ -179,6 +179,7 @@ def query_setup_charges_table():
         print(e)
 
 
+# TODO: Catch SQL Exceptions
 # Create, Update, Delete
 def query_add_os_charge(obj: OSCharges) -> tuple[bool, str]:
     response = (False, "Unknown Error")
