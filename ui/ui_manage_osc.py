@@ -18,34 +18,21 @@ class Ui_DialogManageOSC(object):
         self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label_print = QtWidgets.QLabel(self.layoutWidget)
-        self.label_print.setMinimumSize(QtCore.QSize(90, 0))
-        self.label_print.setMaximumSize(QtCore.QSize(90, 16777215))
+        self.label_print.setMinimumSize(QtCore.QSize(110, 0))
+        self.label_print.setMaximumSize(QtCore.QSize(110, 16777215))
         font = QtGui.QFont()
         font.setPointSize(11)
         self.label_print.setFont(font)
-        self.label_print.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignRight
-            | QtCore.Qt.AlignmentFlag.AlignTrailing
-            | QtCore.Qt.AlignmentFlag.AlignVCenter
-        )
+        self.label_print.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_print.setObjectName("label_print")
         self.horizontalLayout_2.addWidget(self.label_print)
-        spacerItem = QtWidgets.QSpacerItem(
-            10,
-            20,
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
         self.text_print_rate = QtWidgets.QLineEdit(self.layoutWidget)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.text_print_rate.sizePolicy().hasHeightForWidth()
-        )
+        sizePolicy.setHeightForWidth(self.text_print_rate.sizePolicy().hasHeightForWidth())
         self.text_print_rate.setSizePolicy(sizePolicy)
         self.text_print_rate.setMinimumSize(QtCore.QSize(0, 25))
         self.text_print_rate.setObjectName("text_print_rate")
@@ -57,56 +44,35 @@ class Ui_DialogManageOSC(object):
         self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.label_stitch = QtWidgets.QLabel(self.layoutWidget_2)
-        self.label_stitch.setMinimumSize(QtCore.QSize(90, 0))
-        self.label_stitch.setMaximumSize(QtCore.QSize(90, 16777215))
+        self.label_stitch.setMinimumSize(QtCore.QSize(110, 0))
+        self.label_stitch.setMaximumSize(QtCore.QSize(110, 16777215))
         font = QtGui.QFont()
         font.setPointSize(11)
         self.label_stitch.setFont(font)
-        self.label_stitch.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignRight
-            | QtCore.Qt.AlignmentFlag.AlignTrailing
-            | QtCore.Qt.AlignmentFlag.AlignVCenter
-        )
+        self.label_stitch.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_stitch.setObjectName("label_stitch")
         self.horizontalLayout_3.addWidget(self.label_stitch)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            10,
-            20,
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem1 = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem1)
         self.text_stitch_rate = QtWidgets.QLineEdit(self.layoutWidget_2)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.text_stitch_rate.sizePolicy().hasHeightForWidth()
-        )
+        sizePolicy.setHeightForWidth(self.text_stitch_rate.sizePolicy().hasHeightForWidth())
         self.text_stitch_rate.setSizePolicy(sizePolicy)
         self.text_stitch_rate.setMinimumSize(QtCore.QSize(0, 25))
         self.text_stitch_rate.setObjectName("text_stitch_rate")
         self.horizontalLayout_3.addWidget(self.text_stitch_rate)
         self.label_4 = QtWidgets.QLabel(DialogManageOSC)
         self.label_4.setGeometry(QtCore.QRect(10, 150, 47, 16))
-        self.label_4.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignBottom
-            | QtCore.Qt.AlignmentFlag.AlignLeading
-            | QtCore.Qt.AlignmentFlag.AlignLeft
-        )
+        self.label_4.setAlignment(QtCore.Qt.AlignmentFlag.AlignBottom|QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft)
         self.label_4.setObjectName("label_4")
         self.label_5 = QtWidgets.QLabel(DialogManageOSC)
-        self.label_5.setGeometry(QtCore.QRect(280, 50, 71, 20))
+        self.label_5.setGeometry(QtCore.QRect(260, 50, 91, 20))
         font = QtGui.QFont()
         font.setPointSize(7)
         self.label_5.setFont(font)
-        self.label_5.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignLeading
-            | QtCore.Qt.AlignmentFlag.AlignLeft
-            | QtCore.Qt.AlignmentFlag.AlignTop
-        )
+        self.label_5.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTop|QtCore.Qt.AlignmentFlag.AlignTrailing)
         self.label_5.setObjectName("label_5")
         self.layoutWidget1 = QtWidgets.QWidget(DialogManageOSC)
         self.layoutWidget1.setGeometry(QtCore.QRect(30, 20, 321, 27))
@@ -115,38 +81,23 @@ class Ui_DialogManageOSC(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.label_article = QtWidgets.QLabel(self.layoutWidget1)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.label_article.sizePolicy().hasHeightForWidth()
-        )
+        sizePolicy.setHeightForWidth(self.label_article.sizePolicy().hasHeightForWidth())
         self.label_article.setSizePolicy(sizePolicy)
-        self.label_article.setMinimumSize(QtCore.QSize(90, 0))
-        self.label_article.setMaximumSize(QtCore.QSize(90, 16777215))
+        self.label_article.setMinimumSize(QtCore.QSize(110, 0))
+        self.label_article.setMaximumSize(QtCore.QSize(110, 16777215))
         font = QtGui.QFont()
         font.setPointSize(11)
         self.label_article.setFont(font)
-        self.label_article.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignRight
-            | QtCore.Qt.AlignmentFlag.AlignTrailing
-            | QtCore.Qt.AlignmentFlag.AlignVCenter
-        )
+        self.label_article.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_article.setObjectName("label_article")
         self.horizontalLayout.addWidget(self.label_article)
-        spacerItem2 = QtWidgets.QSpacerItem(
-            10,
-            20,
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem2 = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout.addItem(spacerItem2)
         self.text_article = QtWidgets.QLineEdit(self.layoutWidget1)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.text_article.sizePolicy().hasHeightForWidth())
@@ -178,12 +129,18 @@ class Ui_DialogManageOSC(object):
 
         self.retranslateUi(DialogManageOSC)
         QtCore.QMetaObject.connectSlotsByName(DialogManageOSC)
+        DialogManageOSC.setTabOrder(self.text_article, self.text_print_rate)
+        DialogManageOSC.setTabOrder(self.text_print_rate, self.text_stitch_rate)
+        DialogManageOSC.setTabOrder(self.text_stitch_rate, self.text_filter)
+        DialogManageOSC.setTabOrder(self.text_filter, self.btn_save)
+        DialogManageOSC.setTabOrder(self.btn_save, self.btn_update)
+        DialogManageOSC.setTabOrder(self.btn_update, self.btn_delete)
+        DialogManageOSC.setTabOrder(self.btn_delete, self.btn_close)
+        DialogManageOSC.setTabOrder(self.btn_close, self.tv_filter_box)
 
     def retranslateUi(self, DialogManageOSC):
         _translate = QtCore.QCoreApplication.translate
-        DialogManageOSC.setWindowTitle(
-            _translate("DialogManageOSC", "Manage OS Charges")
-        )
+        DialogManageOSC.setWindowTitle(_translate("DialogManageOSC", "Manage OS Charges"))
         self.label_print.setText(_translate("DialogManageOSC", "Printing Rate"))
         self.label_stitch.setText(_translate("DialogManageOSC", "Stitching Rate"))
         self.label_4.setText(_translate("DialogManageOSC", "Filter"))
@@ -197,7 +154,6 @@ class Ui_DialogManageOSC(object):
 
 if __name__ == "__main__":
     import sys
-
     app = QtWidgets.QApplication(sys.argv)
     DialogManageOSC = QtWidgets.QWidget()
     ui = Ui_DialogManageOSC()

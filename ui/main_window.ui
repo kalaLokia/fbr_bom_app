@@ -1194,6 +1194,7 @@ p, li { white-space: pre-wrap; }
     <addaction name="actionUpdateOS_Charges"/>
     <addaction name="actionUpdatePrice_Structure"/>
     <addaction name="actionUpdateFixed_Charges"/>
+    <addaction name="actionUpdateOther_Expenses"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="styleSheet">
@@ -1277,6 +1278,11 @@ p, li { white-space: pre-wrap; }
   <action name="actionUpdateFixed_Charges">
    <property name="text">
     <string>Fixed Charges</string>
+   </property>
+  </action>
+  <action name="actionUpdateOther_Expenses">
+   <property name="text">
+    <string>Other Expenses</string>
    </property>
   </action>
  </widget>

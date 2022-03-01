@@ -189,6 +189,15 @@ def query_add_os_charge(obj: OSCharges) -> tuple[bool, str]:
                 s.add(obj)
                 s.commit()
                 response = (True, f'Os Charges for "{obj.article}" saved successfully.')
+            except sa.exc.IntegrityError as e:
+                s.rollback()
+                if "Violation of PRIMARY KEY constraint" in e.args[0]:
+                    return (
+                        False,
+                        "The item already exists in the database, try to update the value instead.",
+                    )
+                return (False, f"Server declined the request\n{e}")
+
             except Exception as e:
                 s.rollback()
                 return (False, f"Execution failed.\n{e}")
@@ -254,6 +263,14 @@ def query_add_pstructure(obj: PriceStructure) -> tuple[bool, str]:
                     True,
                     f'Price Structure "{obj.unique_code}" added successfully.',
                 )
+            except sa.exc.IntegrityError as e:
+                s.rollback()
+                if "Violation of PRIMARY KEY constraint" in e.args[0]:
+                    return (
+                        False,
+                        "The item already exists in the database, try to update the value instead.",
+                    )
+                return (False, f"Server declined the request\n{e}")
             except Exception as e:
                 s.rollback()
                 return (False, f"Execution failed.\n{e}")

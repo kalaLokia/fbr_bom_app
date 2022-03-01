@@ -326,6 +326,17 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>combo_structure</tabstop>
+  <tabstop>text_mrp</tabstop>
+  <tabstop>text_basic</tabstop>
+  <tabstop>text_filter</tabstop>
+  <tabstop>btn_save</tabstop>
+  <tabstop>btn_update</tabstop>
+  <tabstop>btn_delete</tabstop>
+  <tabstop>btn_close</tabstop>
+  <tabstop>tv_filter_box</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

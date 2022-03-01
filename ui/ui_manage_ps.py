@@ -44,24 +44,13 @@ class Ui_DialogManagePS(object):
         font = QtGui.QFont()
         font.setPointSize(11)
         self.label_basic.setFont(font)
-        self.label_basic.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignRight
-            | QtCore.Qt.AlignmentFlag.AlignTrailing
-            | QtCore.Qt.AlignmentFlag.AlignVCenter
-        )
+        self.label_basic.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_basic.setObjectName("label_basic")
         self.horizontalLayout_3.addWidget(self.label_basic)
-        spacerItem = QtWidgets.QSpacerItem(
-            10,
-            20,
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_3.addItem(spacerItem)
         self.text_basic = QtWidgets.QLineEdit(self.layoutWidget_2)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.text_basic.sizePolicy().hasHeightForWidth())
@@ -81,24 +70,13 @@ class Ui_DialogManagePS(object):
         font = QtGui.QFont()
         font.setPointSize(11)
         self.label_mrp.setFont(font)
-        self.label_mrp.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignRight
-            | QtCore.Qt.AlignmentFlag.AlignTrailing
-            | QtCore.Qt.AlignmentFlag.AlignVCenter
-        )
+        self.label_mrp.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_mrp.setObjectName("label_mrp")
         self.horizontalLayout_2.addWidget(self.label_mrp)
-        spacerItem1 = QtWidgets.QSpacerItem(
-            10,
-            20,
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem1 = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem1)
         self.text_mrp = QtWidgets.QLineEdit(self.layoutWidget_3)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Expanding, QtWidgets.QSizePolicy.Policy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.text_mrp.sizePolicy().hasHeightForWidth())
@@ -108,11 +86,7 @@ class Ui_DialogManagePS(object):
         self.horizontalLayout_2.addWidget(self.text_mrp)
         self.label_filter = QtWidgets.QLabel(DialogManagePS)
         self.label_filter.setGeometry(QtCore.QRect(10, 150, 47, 16))
-        self.label_filter.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignBottom
-            | QtCore.Qt.AlignmentFlag.AlignLeading
-            | QtCore.Qt.AlignmentFlag.AlignLeft
-        )
+        self.label_filter.setAlignment(QtCore.Qt.AlignmentFlag.AlignBottom|QtCore.Qt.AlignmentFlag.AlignLeading|QtCore.Qt.AlignmentFlag.AlignLeft)
         self.label_filter.setObjectName("label_filter")
         self.layoutWidget_4 = QtWidgets.QWidget(DialogManagePS)
         self.layoutWidget_4.setGeometry(QtCore.QRect(30, 20, 321, 27))
@@ -121,33 +95,20 @@ class Ui_DialogManagePS(object):
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.label_structure = QtWidgets.QLabel(self.layoutWidget_4)
-        sizePolicy = QtWidgets.QSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred
-        )
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(
-            self.label_structure.sizePolicy().hasHeightForWidth()
-        )
+        sizePolicy.setHeightForWidth(self.label_structure.sizePolicy().hasHeightForWidth())
         self.label_structure.setSizePolicy(sizePolicy)
         self.label_structure.setMinimumSize(QtCore.QSize(90, 0))
         self.label_structure.setMaximumSize(QtCore.QSize(90, 16777215))
         font = QtGui.QFont()
         font.setPointSize(11)
         self.label_structure.setFont(font)
-        self.label_structure.setAlignment(
-            QtCore.Qt.AlignmentFlag.AlignRight
-            | QtCore.Qt.AlignmentFlag.AlignTrailing
-            | QtCore.Qt.AlignmentFlag.AlignVCenter
-        )
+        self.label_structure.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight|QtCore.Qt.AlignmentFlag.AlignTrailing|QtCore.Qt.AlignmentFlag.AlignVCenter)
         self.label_structure.setObjectName("label_structure")
         self.horizontalLayout.addWidget(self.label_structure)
-        spacerItem2 = QtWidgets.QSpacerItem(
-            10,
-            20,
-            QtWidgets.QSizePolicy.Policy.Fixed,
-            QtWidgets.QSizePolicy.Policy.Minimum,
-        )
+        spacerItem2 = QtWidgets.QSpacerItem(10, 20, QtWidgets.QSizePolicy.Policy.Fixed, QtWidgets.QSizePolicy.Policy.Minimum)
         self.horizontalLayout.addItem(spacerItem2)
         self.combo_structure = QtWidgets.QComboBox(self.layoutWidget_4)
         font = QtGui.QFont()
@@ -161,12 +122,18 @@ class Ui_DialogManagePS(object):
 
         self.retranslateUi(DialogManagePS)
         QtCore.QMetaObject.connectSlotsByName(DialogManagePS)
+        DialogManagePS.setTabOrder(self.combo_structure, self.text_mrp)
+        DialogManagePS.setTabOrder(self.text_mrp, self.text_basic)
+        DialogManagePS.setTabOrder(self.text_basic, self.text_filter)
+        DialogManagePS.setTabOrder(self.text_filter, self.btn_save)
+        DialogManagePS.setTabOrder(self.btn_save, self.btn_update)
+        DialogManagePS.setTabOrder(self.btn_update, self.btn_delete)
+        DialogManagePS.setTabOrder(self.btn_delete, self.btn_close)
+        DialogManagePS.setTabOrder(self.btn_close, self.tv_filter_box)
 
     def retranslateUi(self, DialogManagePS):
         _translate = QtCore.QCoreApplication.translate
-        DialogManagePS.setWindowTitle(
-            _translate("DialogManagePS", "Manage Price Structure")
-        )
+        DialogManagePS.setWindowTitle(_translate("DialogManagePS", "Manage Price Structure"))
         self.btn_save.setText(_translate("DialogManagePS", "Save"))
         self.btn_update.setText(_translate("DialogManagePS", "Update"))
         self.btn_delete.setText(_translate("DialogManagePS", "Delete"))
@@ -182,7 +149,6 @@ class Ui_DialogManagePS(object):
 
 if __name__ == "__main__":
     import sys
-
     app = QtWidgets.QApplication(sys.argv)
     DialogManagePS = QtWidgets.QWidget()
     ui = Ui_DialogManagePS()

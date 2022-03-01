@@ -54,6 +54,10 @@ class WindowManageOsCharges(QtWidgets.QWidget):
         self.ui.btn_update.clicked.connect(self.updateRecord)
         self.ui.btn_delete.clicked.connect(self.deleteRecord)
 
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.close_window.emit()
+        return super().closeEvent(a0)
+
     def refreshDataModel(self):
         self.os_charges = query_fetch_all_os_charges()
         self.articles = [e.article for e in self.os_charges]
@@ -118,12 +122,18 @@ class WindowManageOsCharges(QtWidgets.QWidget):
         """Update existing record in the database"""
         # Button active only if it is existing in loaded models
         osc = OSCharges()
-        osc.article = self.ui.text_article.text()
+        osc.article = self.ui.text_article.text().strip().upper()
         try:
             osc.print_rate = float(self.ui.text_print_rate.text())
             osc.stitch_rate = float(self.ui.text_stitch_rate.text())
-        except:
+        except ValueError:
             self.eventAlertDialog("Invalid data!", "Only digits are allowed!")
+            return
+
+        if osc.print_rate < 0 or osc.stitch_rate < 0:
+            self.eventAlertDialog(
+                "Invalid data!", "Rates cannot be lesser than 0, check your input."
+            )
             return
 
         confirm = self.eventConfirmationDialog(
@@ -141,12 +151,18 @@ class WindowManageOsCharges(QtWidgets.QWidget):
     def saveNewRecord(self):
         """Save new record in the database"""
         osc = OSCharges()
-        osc.article = self.ui.text_article.text()
+        osc.article = self.ui.text_article.text().strip().upper()
         try:
             osc.print_rate = float(self.ui.text_print_rate.text())
             osc.stitch_rate = float(self.ui.text_stitch_rate.text())
         except:
             self.eventAlertDialog("Invalid data!", "Only digits are allowed!")
+            return
+
+        if osc.print_rate < 0 or osc.stitch_rate < 0:
+            self.eventAlertDialog(
+                "Invalid data!", "Rates cannot be lesser than 0, check your input."
+            )
             return
 
         confirm = self.eventConfirmationDialog(

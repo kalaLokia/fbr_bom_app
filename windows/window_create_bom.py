@@ -21,10 +21,11 @@ class WindowCreateBom(QtWidgets.QWidget):
         self.ui.btn_update.clicked.connect(self.updateTables)
         self.ui.btn_close.clicked.connect(self.closeDialogWindow)
 
-    def test_me(self):
-        print("I am okey with this.")
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.close_window.emit()
+        return super().closeEvent(a0)
 
-    def chooseBomPath(self):
+    def chooseBomPath(self) -> None:
         """Opens file dialog for choosing Bom file"""
 
         filename = QtWidgets.QFileDialog.getOpenFileName(

@@ -47,13 +47,13 @@
      <widget class="QLabel" name="label_print">
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>110</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>110</width>
         <height>16777215</height>
        </size>
       </property>
@@ -118,13 +118,13 @@
      <widget class="QLabel" name="label_stitch">
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>110</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>110</width>
         <height>16777215</height>
        </size>
       </property>
@@ -194,9 +194,9 @@
   <widget class="QLabel" name="label_5">
    <property name="geometry">
     <rect>
-     <x>280</x>
+     <x>260</x>
      <y>50</y>
-     <width>71</width>
+     <width>91</width>
      <height>20</height>
     </rect>
    </property>
@@ -209,7 +209,7 @@
     <string>(eg: 3290-BK-G)</string>
    </property>
    <property name="alignment">
-    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    <set>Qt::AlignRight|Qt::AlignTop|Qt::AlignTrailing</set>
    </property>
   </widget>
   <widget class="QWidget" name="layoutWidget">
@@ -232,13 +232,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>90</width>
+        <width>110</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>90</width>
+        <width>110</width>
         <height>16777215</height>
        </size>
       </property>
@@ -339,6 +339,17 @@
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>text_article</tabstop>
+  <tabstop>text_print_rate</tabstop>
+  <tabstop>text_stitch_rate</tabstop>
+  <tabstop>text_filter</tabstop>
+  <tabstop>btn_save</tabstop>
+  <tabstop>btn_update</tabstop>
+  <tabstop>btn_delete</tabstop>
+  <tabstop>btn_close</tabstop>
+  <tabstop>tv_filter_box</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

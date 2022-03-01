@@ -54,6 +54,10 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
         self.ui.btn_update.clicked.connect(self.updateRecord)
         self.ui.btn_delete.clicked.connect(self.deleteRecord)
 
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.close_window.emit()
+        return super().closeEvent(a0)
+
     def refreshDataModel(self):
         self.pstructures = query_fetch_all_price_structure()
         self.ps_uniques = {}
@@ -73,6 +77,12 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
         self.close_window.emit()
 
     def eventMrpChanged(self, text):
+        mrp = 0.0
+        try:
+            mrp = float(text)
+        except ValueError:
+            pass
+
         key = "{}-{}".format(self.ui.combo_structure.currentText(), text)
         if key in self.ps_uniques.keys():
             self.ui.btn_save.setEnabled(False)
@@ -127,10 +137,17 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
         ps = PriceStructure()
         ps.to_ps_code(self.ui.combo_structure.currentText())
         try:
+            # mrp actually not changes
             ps.mrp = float(self.ui.text_mrp.text())
             ps.basic = float(self.ui.text_basic.text())
-        except:
+        except ValueError:
             self.eventAlertDialog("Invalid data!", "Only digits are allowed!")
+            return
+
+        if ps.mrp <= 0 or ps.basic <= 0:
+            self.eventAlertDialog(
+                "Invalid data!", "Rates cannot be zero or less, check your input."
+            )
             return
 
         confirm = self.eventConfirmationDialog(
@@ -154,8 +171,14 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
         try:
             ps.mrp = float(self.ui.text_mrp.text())
             ps.basic = float(self.ui.text_basic.text())
-        except:
+        except ValueError:
             self.eventAlertDialog("Invalid data!", "Only digits are allowed!")
+            return
+
+        if ps.mrp <= 0 or ps.basic <= 0:
+            self.eventAlertDialog(
+                "Invalid data!", "Rates cannot be zero or less, check your input."
+            )
             return
 
         confirm = self.eventConfirmationDialog(

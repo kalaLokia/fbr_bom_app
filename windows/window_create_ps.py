@@ -17,6 +17,10 @@ class WindowCreatePriceStructure(QtWidgets.QWidget):
         self.ui.btn_close.clicked.connect(self.closeDialogWindow)
         self.ui.btn_update.clicked.connect(self.updateTable)
 
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.close_window.emit()
+        return super().closeEvent(a0)
+
     def choosePriceStructPath(self):
         """Opens file dialog for choosing Materials file"""
 
