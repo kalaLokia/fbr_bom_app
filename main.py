@@ -21,6 +21,7 @@ from windows.window_create_osc import WindowCreateOsCharges
 from windows.window_create_ps import WindowCreatePriceStructure
 from windows.window_manage_osc import WindowManageOsCharges
 from windows.window_manage_ps import WindowManagePriceStructure
+from windows.window_manage_expenses import WindowManageExpenses
 
 
 BASE_DIR = os.path.dirname(__file__)
@@ -104,6 +105,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.ui.actionUpgradePrice_Structure.triggered.connect(self.menu_create_ps)
         self.ui.actionUpdateOS_Charges.triggered.connect(self.menu_manage_osc)
         self.ui.actionUpdatePrice_Structure.triggered.connect(self.menu_manage_ps)
+        self.ui.actionUpdateOther_Expenses.triggered.connect(self.menu_manage_expenses)
 
     def tableSelectAll(self):
         """Select or Unselect all check boxes in the table
@@ -356,6 +358,18 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
     def menu_close_manage_ps(self):
         if self.menu_items.get("manage_ps", None) != None:
             self.menu_items["manage_ps"] = None
+
+    def menu_manage_expenses(self):
+        if self.menu_items.get("manage_expenses", None) is None:
+            self.menu_items["manage_expenses"] = WindowManageExpenses()
+            self.menu_items["manage_expenses"].show()
+            self.menu_items["manage_expenses"].close_window.connect(
+                self.menu_close_manage_expenses
+            )
+
+    def menu_close_manage_expenses(self):
+        if self.menu_items.get("manage_expenses", None) != None:
+            self.menu_items["manage_expenses"] = None
 
     def close_create_ps_menu(self):
         if self.menu_items.get("create_ps", None) != None:

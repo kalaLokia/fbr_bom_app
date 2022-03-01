@@ -338,3 +338,124 @@ def query_delete_pstructure(obj: PriceStructure) -> tuple[bool, str]:
         return (False, "Cannot establish connection with server.")
 
     return response
+
+
+def query_fetch_expenses() -> list[FixedRates]:
+    """Fetch only overheads from table fixed rates"""
+
+    result = None
+    with Session() as s:
+        result = (
+            s.query(FixedRates)
+            .where(FixedRates.rate_type == "OH")
+            .order_by(FixedRates.name)
+            .all()
+        )
+    return result
+
+
+def query_add_expense(obj: FixedRates) -> tuple[bool, str]:
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                s.add(obj)
+                s.commit()
+                response = (True, f"Successfully added.")
+            except sa.exc.IntegrityError as e:
+                s.rollback()
+                if "Violation of UNIQUE KEY constraint" in e.args[0]:
+                    return (
+                        False,
+                        "The item already exists in the database, try to update the value instead.",
+                    )
+                return (False, f"Server declined the request\n{e}")
+
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
+
+
+def query_update_expenses(expense: str, rate: float) -> tuple[bool, str]:
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                update_obj: FixedRates = (
+                    s.query(FixedRates).filter(FixedRates.name == expense).one()
+                )
+                update_obj.value = rate
+                s.commit()
+                response = (
+                    True,
+                    f"Successfully updated the rate.",
+                )
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
+
+
+def query_delete_expenses(items: list[str]) -> tuple[bool, str]:
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                query = s.query(FixedRates).filter(FixedRates.name.in_(items))
+                query.delete(synchronize_session=False)
+                s.commit()
+                response = (
+                    True,
+                    f"Successfully removed {len(items)} items.",
+                )
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
+
+
+def query_fetch_fixed_rates() -> list[FixedRates]:
+    """Fetch all excepts overheads from table fixed rates"""
+
+    result = None
+    with Session() as s:
+        result = (
+            s.query(FixedRates)
+            .where(FixedRates.rate_type != "OH")
+            .order_by(FixedRates.name)
+            .all()
+        )
+    return result
+
+
+def query_update_fixed_rates(obj: FixedRates) -> tuple[bool, str]:
+    response = (False, "Unknown Error")
+    try:
+        with Session() as s:
+            try:
+                update_obj: FixedRates = (
+                    s.query(FixedRates).filter(OSCharges.name == obj.name).one()
+                )
+                update_obj.value = obj.value
+                s.commit()
+                response = (
+                    True,
+                    f"Successfully updated the rate.",
+                )
+            except Exception as e:
+                s.rollback()
+                return (False, f"Execution failed.\n{e}")
+    except:
+        return (False, "Cannot establish connection with server.")
+
+    return response
