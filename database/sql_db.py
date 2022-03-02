@@ -143,31 +143,31 @@ def query_setup_charges_table():
 
     initial_values = [
         FixedRates(
-            name="Wastage and Benefits", value=9.72, value_fmt="rate", rate_type="OH"
+            name="Wastage and Benefits", value=9.72, value_fmt="INR", rate_type="OH"
         ),
         FixedRates(
-            name="Salaries and Emoluments", value=0.79, value_fmt="rate", rate_type="OH"
+            name="Salaries and Emoluments", value=0.79, value_fmt="INR", rate_type="OH"
         ),
         FixedRates(
-            name="Other Factory Overheads", value=1.73, value_fmt="rate", rate_type="OH"
+            name="Other Factory Overheads", value=1.73, value_fmt="INR", rate_type="OH"
         ),
-        FixedRates(name="Admin Expenses", value=1.37, value_fmt="rate", rate_type="OH"),
+        FixedRates(name="Admin Expenses", value=1.37, value_fmt="INR", rate_type="OH"),
         FixedRates(
             name="Interest and Bank Charges",
             value=0.02,
-            value_fmt="rate",
+            value_fmt="INR",
             rate_type="OH",
         ),
-        FixedRates(name="Depreciation", value=4.35, value_fmt="rate", rate_type="OH"),
-        FixedRates(name="Other Expenses", value=0.0, value_fmt="rate", rate_type="OH"),
-        FixedRates(name="Finance Costs", value=1.06, value_fmt="rate", rate_type="OH"),
+        FixedRates(name="Depreciation", value=4.35, value_fmt="INR", rate_type="OH"),
+        FixedRates(name="Other Expenses", value=0.0, value_fmt="INR", rate_type="OH"),
+        FixedRates(name="Finance Costs", value=1.06, value_fmt="INR", rate_type="OH"),
         FixedRates(
             name="Selling and Distribution",
             value=16.75,
             value_fmt="percent",
-            rate_type="OC",
+            rate_type="SD",
         ),
-        FixedRates(name="Royality", value=0.5, value_fmt="percent", rate_type="OC"),
+        FixedRates(name="Royality", value=0.5, value_fmt="percent", rate_type="RY"),
         FixedRates(name="Sales Return", value=1, value_fmt="percent", rate_type="SR"),
     ]
 
@@ -438,19 +438,33 @@ def query_fetch_fixed_rates() -> list[FixedRates]:
     return result
 
 
-def query_update_fixed_rates(obj: FixedRates) -> tuple[bool, str]:
+def query_update_fixed_rates(
+    royality: float = None, sell_distr: float = None, sales_ret: float = None
+) -> tuple[bool, str]:
     response = (False, "Unknown Error")
     try:
         with Session() as s:
             try:
-                update_obj: FixedRates = (
-                    s.query(FixedRates).filter(OSCharges.name == obj.name).one()
-                )
-                update_obj.value = obj.value
+                if royality:
+                    update_ry = (
+                        s.query(FixedRates).filter(FixedRates.rate_type == "RY").one()
+                    )
+                    update_ry.value = royality
+                if sell_distr:
+                    update_sd = (
+                        s.query(FixedRates).filter(FixedRates.rate_type == "SD").one()
+                    )
+                    update_sd.value = sell_distr
+                if sales_ret:
+                    update_sr = (
+                        s.query(FixedRates).filter(FixedRates.rate_type == "SR").one()
+                    )
+                    update_sr.value = sales_ret
+
                 s.commit()
                 response = (
                     True,
-                    f"Successfully updated the rate.",
+                    f"Successfully updated the rate(s).",
                 )
             except Exception as e:
                 s.rollback()

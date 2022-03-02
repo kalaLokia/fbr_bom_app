@@ -1,10 +1,12 @@
 # FIXME: Handle SQL exceptions; especially for create, update and delete
+# FIXME: Handle SQL exceptions while launching application
+# TODO: Create configuration files to save DB informations
 # TODO: Introduce Alert, Confirmation dialogs in home screen
-# TODO: UI for fixed rates modifications
 # TODO: Handle multiple button click in a sec (timer | dialog)
 # TODO: Write module level descriptions
 # TODO: Create readme
 # TODO: Create packaging notes
+
 import os, sys
 from pandas import DataFrame
 from PyQt6 import QtCore, QtGui, QtWidgets
@@ -22,6 +24,7 @@ from windows.window_create_ps import WindowCreatePriceStructure
 from windows.window_manage_osc import WindowManageOsCharges
 from windows.window_manage_ps import WindowManagePriceStructure
 from windows.window_manage_expenses import WindowManageExpenses
+from windows.window_manage_fixed_rates import WindowManageFixedCharges
 
 
 BASE_DIR = os.path.dirname(__file__)
@@ -106,6 +109,9 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.ui.actionUpdateOS_Charges.triggered.connect(self.menu_manage_osc)
         self.ui.actionUpdatePrice_Structure.triggered.connect(self.menu_manage_ps)
         self.ui.actionUpdateOther_Expenses.triggered.connect(self.menu_manage_expenses)
+        self.ui.actionUpdateFixed_Charges.triggered.connect(
+            self.menu_manage_fixed_charges
+        )
 
     def tableSelectAll(self):
         """Select or Unselect all check boxes in the table
@@ -370,6 +376,18 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
     def menu_close_manage_expenses(self):
         if self.menu_items.get("manage_expenses", None) != None:
             self.menu_items["manage_expenses"] = None
+
+    def menu_manage_fixed_charges(self):
+        if self.menu_items.get("manage_fixed_charges", None) is None:
+            self.menu_items["manage_fixed_charges"] = WindowManageFixedCharges()
+            self.menu_items["manage_fixed_charges"].show()
+            self.menu_items["manage_fixed_charges"].close_window.connect(
+                self.menu_close_manage_fixed_charges
+            )
+
+    def menu_close_manage_fixed_charges(self):
+        if self.menu_items.get("manage_fixed_charges", None) != None:
+            self.menu_items["manage_fixed_charges"] = None
 
     def close_create_ps_menu(self):
         if self.menu_items.get("create_ps", None) != None:
