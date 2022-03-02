@@ -1,4 +1,3 @@
-SQL_DB_NAME = "harpy_eagle"
 SQL_T_BOM = "tbl_bom"
 SQL_T_ARTICLE = "tbl_article_list"
 SQL_T_CHARGES = "tbl_os_charges"

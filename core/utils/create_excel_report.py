@@ -5,12 +5,16 @@ Yep, I know it is little mess.. I don't wanna spend much time on this. ;')
 
 """
 
-# FIXME: Make it work
-
+from typing import TYPE_CHECKING
 from io import BytesIO
+
 import pandas as pd
 
-from database.database import Article, FixedRates, OSCharges
+from settings import EXPORT_DIR
+
+
+if TYPE_CHECKING:
+    from database.database import Article, OSCharges
 
 
 class ExcelReporting:
@@ -571,7 +575,7 @@ class ExcelReporting:
             {"type": "no_blanks", "format": fmt_rate},
         )
         writer.save()
-        filename = "files/" + self.article.get_filename
+        filename = EXPORT_DIR + "/" + self.article.get_filename
         status = self.write_bytes_to_xlsx(output, filename)
         return status
 

@@ -1,11 +1,15 @@
+from typing import TYPE_CHECKING
 from datetime import datetime
 
-from database.database import OSCharges
+from settings import EXPORT_DIR
+
+if TYPE_CHECKING:
+    from database.database import OSCharges
 
 
 def calculateProfit(
     basic_rate: float = 0.0,
-    os_charges: OSCharges = None,
+    os_charges: "OSCharges" = None,
     material_cost: float = 0.0,
     fixed_rates=None,
 ) -> tuple:
@@ -75,7 +79,7 @@ def generate_bulk_report(df, fixed_rates) -> None:
         (df["Basic Rate"] - df["Total Cost"]) / df["Basic Rate"] * 100
     ).round(2)
 
-    filename = "files/Cost Analysis Report [{0}].csv".format(
+    filename = f"{EXPORT_DIR}/Cost Analysis Report [{0}].csv".format(
         datetime.now().strftime("%d%m%y%H%M%S")
     )
     df.to_csv(filename)

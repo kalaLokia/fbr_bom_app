@@ -5,27 +5,20 @@ Models in the database
 
 import sqlalchemy as sa
 from sqlalchemy.engine import URL
-
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.schema import UniqueConstraint, PrimaryKeyConstraint  # , ForeignKey
+
+from settings import DB_CONN_STR
+
 from . import (
-    SQL_DB_NAME,
     SQL_T_ARTICLE,
     SQL_T_BOM,
     SQL_T_PRICE_STRUCTURE,
     SQL_T_CHARGES,
     SQL_T_FIXED_RATES,
-)  # , SQL_CONN
-
-conn_string = (
-    r"Driver={ODBC Driver 17 for SQL Server};"
-    r"Server=localhost;"
-    rf"Database={SQL_DB_NAME};"
-    r"uid=sa;"
-    r"pwd=kalalokia;"
-    r"Integrated Security=false;"
 )
-conn_url = URL.create("mssql+pyodbc", query={"odbc_connect": conn_string})
+
+conn_url = URL.create("mssql+pyodbc", query={"odbc_connect": DB_CONN_STR})
 
 engine = sa.create_engine(conn_url, connect_args={"timeout": 5})
 

@@ -4,16 +4,21 @@ SQL queries execution
 """
 
 from typing import Union
+
 import sqlalchemy as sa
 import pandas as pd
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
+from settings import DB_CONN_STR
+
 from .database import Bom, Article, OSCharges, PriceStructure, engine, FixedRates
-from . import SQL_DB_NAME, SQL_T_BOM
+from . import SQL_T_BOM
 
 
 Session = sessionmaker(bind=engine)
+
+# TODO: Handle exceptions
 
 
 def query_clean_os_charges():
@@ -106,11 +111,11 @@ def query_fetch_bom_df(search_key: str, size: int) -> Union[pd.DataFrame, None]:
     # Recursive query
     raw_query = f"""WITH cte AS (
         SELECT *
-        FROM [{SQL_DB_NAME}].[dbo].[{SQL_T_BOM}]
+        FROM [{DB_CONN_STR}].[dbo].[{SQL_T_BOM}]
         WHERE father = '{search_key}'
         UNION ALL
         SELECT p.*
-        FROM [{SQL_DB_NAME}].[dbo].[{SQL_T_BOM}] p
+        FROM [{DB_CONN_STR}].[dbo].[{SQL_T_BOM}] p
         INNER JOIN cte ON cte.child = p.father
         WHERE
         cte.child Like '%{size}' OR cte.child Like '%l' OR cte.child Like '%g'
@@ -179,7 +184,6 @@ def query_setup_charges_table():
         print(e)
 
 
-# TODO: Catch SQL Exceptions
 # Create, Update, Delete
 def query_add_os_charge(obj: OSCharges) -> tuple[bool, str]:
     response = (False, "Unknown Error")
