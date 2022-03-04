@@ -20,8 +20,8 @@ if TYPE_CHECKING:
 class ExcelReporting:
     def __init__(
         self,
-        article: Article,
-        os_charges: OSCharges,
+        article: "Article",
+        os_charges: "OSCharges",
         basic_rate: float,
         fixed_rates,
         nl_df,

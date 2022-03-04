@@ -1,16 +1,10 @@
 import math
 
-from typing import TYPE_CHECKING
-
 import pandas as pd
 
 
-if TYPE_CHECKING:
-    from database.database import Article
-
-
 class BillOfMaterial:
-    """Article's bom"""
+    """Calculate and fetch correct bom for an article"""
 
     def __init__(self, df: pd.DataFrame(), pairs_in_case: int) -> None:
         self.bom_df = df

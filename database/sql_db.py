@@ -21,84 +21,110 @@ Session = sessionmaker(bind=engine)
 # TODO: Handle exceptions
 
 
-def query_clean_os_charges():
+def query_clean_os_charges() -> bool:
     """Clean all data from table 'tbl_os_charges'"""
-    with Session() as s:
-        s.query(OSCharges).delete()
-        s.commit()
+    try:
+        with Session() as s:
+            s.query(OSCharges).delete()
+            s.commit()
+    except:
+        return False
+    return True
 
 
-def query_clean_price_structure():
+def query_clean_price_structure() -> bool:
     """Clean all data from table 'tbl_price_structure'"""
-    with Session() as s:
-        s.query(PriceStructure).delete()
-        s.commit()
+    try:
+        with Session() as s:
+            s.query(PriceStructure).delete()
+            s.commit()
+    except:
+        return False
+    return True
 
 
-def query_clean_bom_articles():
+def query_clean_bom_articles() -> bool:
     """Clean all data from tables 'tbl_bom' and  'tbl_article'"""
-    with Session() as s:
-        s.query(Bom).delete()
-        s.query(Article).delete()
-        s.commit()
+    try:
+        with Session() as s:
+            s.query(Bom).delete()
+            s.query(Article).delete()
+            s.commit()
+    except:
+        return False
 
 
-def query_fetch_fixed_rates():
+def query_fetch_fixed_rates() -> list[FixedRates]:
     """Fetch all rows in FixedRates table"""
 
     result = None
-    with Session() as s:
-        result = s.query(FixedRates).all()
+    try:
+        with Session() as s:
+            result = s.query(FixedRates).all()
+    except:
+        pass
     return result
 
 
-def query_list_articles_all():
-    """List all articles"""
+def query_fetch_articles_list() -> list[tuple[Article, PriceStructure, OSCharges]]:
+    """Fetch articles data for listing."""
+
     result = None
-    with Session() as s:
-        result = (
-            s.query(
-                Article,
-                PriceStructure,
-                OSCharges,
+    try:
+        with Session() as s:
+            result = (
+                s.query(
+                    Article,
+                    PriceStructure,
+                    OSCharges,
+                )
+                .select_from(Article)
+                .join(
+                    PriceStructure,
+                    (PriceStructure.ps_code == Article.ps_code)
+                    & (PriceStructure.mrp == Article.mrp),
+                    isouter=True,
+                    full=False,
+                )
+                .join(
+                    OSCharges,
+                    OSCharges.article == Article.article_code,
+                    isouter=True,
+                    full=False,
+                )
+                .order_by(Article.art_no, Article.category, Article.color)
+                .all()
             )
-            .select_from(Article)
-            .join(
-                PriceStructure,
-                (PriceStructure.ps_code == Article.ps_code)
-                & (PriceStructure.mrp == Article.mrp),
-                isouter=True,
-                full=False,
-            )
-            .join(
-                OSCharges,
-                OSCharges.article == Article.article_code,
-                isouter=True,
-                full=False,
-            )
-            .order_by(Article.art_no, Article.category, Article.color)
-            .all()
-        )
+    except:
+        pass
     return result
 
 
 def query_fetch_all_os_charges() -> list[OSCharges]:
     """Fetch all os charges data"""
+
     result = None
-    with Session() as s:
-        result = s.query(OSCharges).order_by(OSCharges.article).all()
+    try:
+        with Session() as s:
+            result = s.query(OSCharges).order_by(OSCharges.article).all()
+    except:
+        pass
     return result
 
 
 def query_fetch_all_price_structure() -> list[PriceStructure]:
     """Fetch all price structure data"""
+
     result = None
-    with Session() as s:
-        result = (
-            s.query(PriceStructure)
-            .order_by(PriceStructure.ps_code, PriceStructure.mrp)
-            .all()
-        )
+    try:
+        with Session() as s:
+            result = (
+                s.query(PriceStructure)
+                .order_by(PriceStructure.ps_code, PriceStructure.mrp)
+                .all()
+            )
+    except:
+        pass
     return result
 
 
@@ -135,53 +161,6 @@ def query_fetch_bom_df(search_key: str, size: int) -> Union[pd.DataFrame, None]:
         df = None
 
     return df
-
-
-def query_setup_charges_table():
-    """Setup fixed rates table with initial values.
-
-    Note:-
-        OH - Overheads
-        OC - Other Charges
-        SR - Sales Return
-    """
-
-    initial_values = [
-        FixedRates(
-            name="Wastage and Benefits", value=9.72, value_fmt="INR", rate_type="OH"
-        ),
-        FixedRates(
-            name="Salaries and Emoluments", value=0.79, value_fmt="INR", rate_type="OH"
-        ),
-        FixedRates(
-            name="Other Factory Overheads", value=1.73, value_fmt="INR", rate_type="OH"
-        ),
-        FixedRates(name="Admin Expenses", value=1.37, value_fmt="INR", rate_type="OH"),
-        FixedRates(
-            name="Interest and Bank Charges",
-            value=0.02,
-            value_fmt="INR",
-            rate_type="OH",
-        ),
-        FixedRates(name="Depreciation", value=4.35, value_fmt="INR", rate_type="OH"),
-        FixedRates(name="Other Expenses", value=0.0, value_fmt="INR", rate_type="OH"),
-        FixedRates(name="Finance Costs", value=1.06, value_fmt="INR", rate_type="OH"),
-        FixedRates(
-            name="Selling and Distribution",
-            value=16.75,
-            value_fmt="percent",
-            rate_type="SD",
-        ),
-        FixedRates(name="Royality", value=0.5, value_fmt="percent", rate_type="RY"),
-        FixedRates(name="Sales Return", value=1, value_fmt="percent", rate_type="SR"),
-    ]
-
-    try:
-        with Session() as s:
-            s.bulk_save_objects(initial_values)
-            s.commit()
-    except Exception as e:
-        print(e)
 
 
 # Create, Update, Delete
@@ -348,13 +327,16 @@ def query_fetch_expenses() -> list[FixedRates]:
     """Fetch only overheads from table fixed rates"""
 
     result = None
-    with Session() as s:
-        result = (
-            s.query(FixedRates)
-            .where(FixedRates.rate_type == "OH")
-            .order_by(FixedRates.name)
-            .all()
-        )
+    try:
+        with Session() as s:
+            result = (
+                s.query(FixedRates)
+                .where(FixedRates.rate_type == "OH")
+                .order_by(FixedRates.name)
+                .all()
+            )
+    except:
+        pass
     return result
 
 
@@ -368,7 +350,7 @@ def query_add_expense(obj: FixedRates) -> tuple[bool, str]:
                 response = (True, f"Successfully added.")
             except sa.exc.IntegrityError as e:
                 s.rollback()
-                if "Violation of UNIQUE KEY constraint" in e.args[0]:
+                if "violation of unique key constraint" in e.args[0].lower():
                     return (
                         False,
                         "The item already exists in the database, try to update the value instead.",
@@ -432,13 +414,16 @@ def query_fetch_fixed_rates() -> list[FixedRates]:
     """Fetch all excepts overheads from table fixed rates"""
 
     result = None
-    with Session() as s:
-        result = (
-            s.query(FixedRates)
-            .where(FixedRates.rate_type != "OH")
-            .order_by(FixedRates.name)
-            .all()
-        )
+    try:
+        with Session() as s:
+            result = (
+                s.query(FixedRates)
+                .where(FixedRates.rate_type != "OH")
+                .order_by(FixedRates.name)
+                .all()
+            )
+    except:
+        pass
     return result
 
 
@@ -477,3 +462,53 @@ def query_update_fixed_rates(
         return (False, "Cannot establish connection with server.")
 
     return response
+
+
+# One time direct execution for filling up fixed rates table.
+def query_setup_charges_table() -> bool:
+    """Setup fixed rates table with initial values.
+
+    Note:-
+        OH - Overheads
+        OC - Other Charges
+        SR - Sales Return
+    """
+
+    initial_values = [
+        FixedRates(
+            name="Wastage and Benefits", value=9.72, value_fmt="INR", rate_type="OH"
+        ),
+        FixedRates(
+            name="Salaries and Emoluments", value=0.79, value_fmt="INR", rate_type="OH"
+        ),
+        FixedRates(
+            name="Other Factory Overheads", value=1.73, value_fmt="INR", rate_type="OH"
+        ),
+        FixedRates(name="Admin Expenses", value=1.37, value_fmt="INR", rate_type="OH"),
+        FixedRates(
+            name="Interest and Bank Charges",
+            value=0.02,
+            value_fmt="INR",
+            rate_type="OH",
+        ),
+        FixedRates(name="Depreciation", value=4.35, value_fmt="INR", rate_type="OH"),
+        FixedRates(name="Other Expenses", value=0.0, value_fmt="INR", rate_type="OH"),
+        FixedRates(name="Finance Costs", value=1.06, value_fmt="INR", rate_type="OH"),
+        FixedRates(
+            name="Selling and Distribution",
+            value=16.75,
+            value_fmt="percent",
+            rate_type="SD",
+        ),
+        FixedRates(name="Royality", value=0.5, value_fmt="percent", rate_type="RY"),
+        FixedRates(name="Sales Return", value=1, value_fmt="percent", rate_type="SR"),
+    ]
+
+    try:
+        with Session() as s:
+            s.bulk_save_objects(initial_values)
+            s.commit()
+    except Exception as e:
+        print(e)
+        return False
+    return True

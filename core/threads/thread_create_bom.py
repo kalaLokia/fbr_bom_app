@@ -1,7 +1,24 @@
+"""
+Clean and bulk update table bom and article with the data provided.
+
+Works in seperate thread as it is time consuming, that way this 
+process will not freeze the main application. All neccessary calculations are
+performed using `pandas` to make "bom" and "articles list" tables. 
+
+Mandatory columns:
+------------------
+bom herirachy:- father, father name, child, child qty, process, process order
+
+materials:- item no, mrp, foreign name, no of pairs, product type, 
+            inventory uom, last purchase price
+
+"""
+
 import warnings
 
 import pandas as pd
 from PyQt6 import QtCore
+from sqlalchemy.exc import IntegrityError
 
 from database import SQL_T_BOM, SQL_T_ARTICLE
 from database.database import engine
@@ -29,24 +46,7 @@ class WorkerThreadBom(QtCore.QThread):
 
     def createBomArticleTable(self) -> tuple[bool, str]:
         """
-        Create or re-create(if exists) tables "bom" and "article" in database.
-
-        Excel file with name "Bom Herirachy final" required with columns:
-            -  father
-            -  father name
-            -  child
-            -  child qty
-            -  process
-            -  process order
-
-        Excel file with name "materials" required with columns:
-            -  item no
-            -  mrp
-            -  foreign name
-            -  no of pairs
-            -  product type
-            -  inventory uom
-            -  last purchase price
+        Clean and bulk update tables "bom" and "article" in database.
 
         """
 
@@ -234,24 +234,50 @@ class WorkerThreadBom(QtCore.QThread):
         )
         self.update_progress.emit(69)  # Passing the progress signal
 
-        query_clean_bom_articles()
+        status = query_clean_bom_articles()
+        if not status:
+            return (
+                False,
+                "Unable to clear database, check the connection with server.",
+            )
         self.update_progress.emit(74)  # Passing the progress signal
-        art_df.to_sql(
-            SQL_T_ARTICLE,
-            con=engine,
-            if_exists="append",
-            index=False,
-        )
-        self.update_progress.emit(86)  # Passing the progress signal
-        bom_df.to_sql(
-            SQL_T_BOM,
-            con=engine,
-            if_exists="append",
-            index=True,
-            index_label="bom_id",
-        )
-        self.update_progress.emit(100)  # Passing the progress signal
+        try:
+            bom_df.to_sql(
+                SQL_T_BOM,
+                con=engine,
+                if_exists="append",
+                index=True,
+                index_label="bom_id",
+            )
+        except IntegrityError as e:
+            err = e.args[0].lower()
+            if "violation of unique key constraint" in err:
+                return (
+                    False,
+                    "Duplicate values found in the data, cannot proceed further.",
+                )
+        except Exception as e:
+            return (False, f"[Error 108] Server failure #report to me:\n{e}")
 
+        self.update_progress.emit(88)  # Passing the progress signal
+        try:
+            art_df.to_sql(
+                SQL_T_ARTICLE,
+                con=engine,
+                if_exists="append",
+                index=False,
+            )
+        except IntegrityError as e:
+            err = e.args[0].lower()
+            if "violation of primary key constraint" in err:
+                return (
+                    False,
+                    "Duplicate values found in the data, cannot proceed further.",
+                )
+        except Exception as e:
+            return (False, f"[Error 108] Server failure #report to me:\n{e}")
+
+        self.update_progress.emit(100)  # Passing the progress signal
         return (True, "Successfully updated the database.")
 
     @staticmethod

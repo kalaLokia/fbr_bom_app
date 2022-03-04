@@ -530,6 +530,9 @@ class Ui_MainWindow(object):
         self.actionUpdateFixed_Charges.setObjectName("actionUpdateFixed_Charges")
         self.actionUpdateOther_Expenses = QtGui.QAction(MainWindow)
         self.actionUpdateOther_Expenses.setObjectName("actionUpdateOther_Expenses")
+        self.actionRefresh = QtGui.QAction(MainWindow)
+        self.actionRefresh.setObjectName("actionRefresh")
+        self.menuFile.addAction(self.actionRefresh)
         self.menuFile.addAction(self.actionClose)
         self.menuBulkUpgrade.addAction(self.actionUpgradeBom)
         self.menuBulkUpgrade.addAction(self.actionUpgradeOS_Charge)
@@ -600,6 +603,7 @@ class Ui_MainWindow(object):
         self.actionUpgradePrice_Structure.setText(_translate("MainWindow", "Price Structure"))
         self.actionUpdateFixed_Charges.setText(_translate("MainWindow", "Fixed Charges"))
         self.actionUpdateOther_Expenses.setText(_translate("MainWindow", "Other Expenses"))
+        self.actionRefresh.setText(_translate("MainWindow", "Refresh"))
 
 
 if __name__ == "__main__":

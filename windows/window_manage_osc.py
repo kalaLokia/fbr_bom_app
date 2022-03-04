@@ -16,10 +16,11 @@ QtCore.QDir.addSearchPath("icons", "icons")
 
 class WindowManageOsCharges(QtWidgets.QWidget):
 
-    close_window = QtCore.pyqtSignal()
+    close_window = QtCore.pyqtSignal(bool)  # Any changes made to db or not
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
+        self.is_updated: bool = False
         self.ui = Ui_DialogManageOSC()
         self.ui.setupUi(self)
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
@@ -55,8 +56,12 @@ class WindowManageOsCharges(QtWidgets.QWidget):
         self.ui.btn_delete.clicked.connect(self.deleteRecord)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        self.close_window.emit()
+        self.close_window.emit(self.is_updated)
         return super().closeEvent(a0)
+
+    def closeDialogWindow(self):
+        self.close_window.emit(self.is_updated)
+        # QtCore.QCoreApplication.instance().quit()
 
     def refreshDataModel(self):
         self.os_charges = query_fetch_all_os_charges()
@@ -72,12 +77,8 @@ class WindowManageOsCharges(QtWidgets.QWidget):
             self.model.setItem(row, 0, article)
             self.model.setItem(row, 1, print_rate)
             self.model.setItem(row, 2, stitch_rate)
-
+        self.is_updated = True
         self.filter_proxy_model.setSourceModel(self.model)
-
-    def closeDialogWindow(self):
-        self.close_window.emit()
-        # QtCore.QCoreApplication.instance().quit()
 
     def eventArticleChanged(self, text):
         if text.strip().upper() in self.articles:

@@ -5,7 +5,7 @@ BASE_DIR = os.path.dirname(__file__)  # Root directory of app
 EXPORT_DIR = os.path.join(BASE_DIR, "data")  # File default save location
 
 DB_HOST = None
-DB_NAME = None
+DB_NAME = "harpy_eagle"  # app specific database name, not interfere with other db
 DB_USER = None
 DB_PASS = None
 DB_CONN_STR = None
@@ -27,8 +27,6 @@ ok_config = config.read("config.ini")
 if ok_config:
     if config.has_option("DATABASE", "DB_HOST"):
         DB_HOST = config.get("DATABASE", "DB_HOST")
-    if config.has_option("DATABASE", "DB_NAME"):
-        DB_NAME = config.get("DATABASE", "DB_NAME")
     if config.has_option("DATABASE", "DB_USER"):
         DB_USER = config.get("DATABASE", "DB_USER")
     if config.has_option("DATABASE", "DB_PASS"):

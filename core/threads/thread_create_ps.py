@@ -2,6 +2,7 @@ import warnings
 
 import pandas as pd
 from PyQt6 import QtCore
+from sqlalchemy.exc import IntegrityError
 
 from database import SQL_T_PRICE_STRUCTURE
 from database.database import engine
@@ -10,7 +11,8 @@ from database.sql_db import query_clean_price_structure
 
 class WorkerThreadPriceStructure(QtCore.QThread):
     """
-    Create or re-create(if exists) table price structure in database.
+    Clean and bulk update table price structure in database.
+
     """
 
     completed = QtCore.pyqtSignal(bool, str)
@@ -51,7 +53,12 @@ class WorkerThreadPriceStructure(QtCore.QThread):
                 df["price_structure"] = df["price_structure"].str.upper()
                 df.fillna(0)
 
-                query_clean_price_structure()
+                status = query_clean_price_structure()
+                if not status:
+                    return (
+                        False,
+                        "Unable to clear database, check the connection with server.",
+                    )
 
                 df.to_sql(
                     SQL_T_PRICE_STRUCTURE,
@@ -72,6 +79,13 @@ class WorkerThreadPriceStructure(QtCore.QThread):
                 False,
                 'Missing required columns in the record, expecting "price_structure" | "mrp" | "basic"',
             )
+        except IntegrityError as e:
+            err = e.args[0].lower()
+            if "violation of primary key constraint" in err:
+                return (
+                    False,
+                    "Duplicate values found in the data, cannot update data.",
+                )
         except Exception as e:
             return (False, f"[108] Failed to load files,\n({e})")
 

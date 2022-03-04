@@ -6,10 +6,11 @@ from ui.ui_manage_fixed_charges import Ui_DialogManageFixedCharge
 
 class WindowManageFixedCharges(QtWidgets.QWidget):
 
-    close_window = QtCore.pyqtSignal()
+    close_window = QtCore.pyqtSignal(bool)  # Any changes made to db or not
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
+        self.is_updated: bool = False
         self.ui = Ui_DialogManageFixedCharge()
         self.ui.setupUi(self)
         self.refreshDataModel()
@@ -19,7 +20,7 @@ class WindowManageFixedCharges(QtWidgets.QWidget):
         self.ui.btn_update.clicked.connect(self.buttonUpdate)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        self.close_window.emit()
+        self.close_window.emit(self.is_updated)
         return super().closeEvent(a0)
 
     def refreshDataModel(self):
@@ -34,6 +35,7 @@ class WindowManageFixedCharges(QtWidgets.QWidget):
             elif fc.rate_type == "SR":
                 self.sale_ret = round(fc.value, 2)
                 self.ui.text_sale_ret.setText(str(round(fc.value, 2)))
+        self.is_updated = True
         self.ui.btn_update.setEnabled(False)
 
     def eventValuesChanged(self, text):

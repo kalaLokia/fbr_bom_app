@@ -15,10 +15,11 @@ QtCore.QDir.addSearchPath("icons", "icons")
 
 class WindowManagePriceStructure(QtWidgets.QWidget):
 
-    close_window = QtCore.pyqtSignal()
+    close_window = QtCore.pyqtSignal(bool)  # Any changes made to db or not
 
     def __init__(self):
         super().__init__()
+        self.is_updated: bool = False
         self.ui = Ui_DialogManagePS()
         self.ui.setupUi(self)
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
@@ -55,10 +56,10 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
         self.ui.btn_delete.clicked.connect(self.deleteRecord)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        self.close_window.emit()
+        self.close_window.emit(self.is_updated)
         return super().closeEvent(a0)
 
-    def refreshDataModel(self):
+    def refreshDataModel(self) -> None:
         self.pstructures = query_fetch_all_price_structure()
         self.ps_uniques = {}
         self.model = QtGui.QStandardItemModel(len(self.pstructures), 2)
@@ -71,10 +72,11 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
             self.model.setItem(row, 0, pstructure)
             self.model.setItem(row, 1, basic)
 
+        self.is_updated = True
         self.filter_proxy_model.setSourceModel(self.model)
 
     def closeDialogWindow(self):
-        self.close_window.emit()
+        self.close_window.emit(self.is_updated)
 
     def eventMrpChanged(self, text):
         mrp = 0.0
@@ -104,7 +106,7 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
         self.clearTextBoxValues()
 
     def eventTableDoubleClicked(self, modelIndex: QtCore.QModelIndex):
-        key = self.model.index(modelIndex.row(), 0).data()
+        key = self.ui.tv_filter_box.model().index(modelIndex.row(), 0).data()
 
         self.ui.text_mrp.setText(str(self.ps_uniques[key].mrp))
         self.ui.text_basic.setText(str(self.ps_uniques[key].basic))
@@ -199,7 +201,9 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
         selections = self.ui.tv_filter_box.selectedIndexes()
         pss = list(
             set(
-                self.ps_uniques[self.model.index(selection.row(), 0).data()]
+                self.ps_uniques[
+                    self.ui.tv_filter_box.model().index(selection.row(), 0).data()
+                ]
                 for selection in selections
             )
         )

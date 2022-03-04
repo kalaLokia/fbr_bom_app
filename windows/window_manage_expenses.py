@@ -13,10 +13,11 @@ from ui.ui_manage_expenses import Ui_DialogManageExpenses
 
 class WindowManageExpenses(QtWidgets.QWidget):
 
-    close_window = QtCore.pyqtSignal()
+    close_window = QtCore.pyqtSignal(bool)  # Any changes made to db or not
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
+        self.is_updated: bool = False
         self.ui = Ui_DialogManageExpenses()
         self.ui.setupUi(self)
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
@@ -60,11 +61,15 @@ class WindowManageExpenses(QtWidgets.QWidget):
             exp_rate = QtGui.QStandardItem(str(round(exp.value, 2)))
             self.model.setItem(row, 0, exp_name)
             self.model.setItem(row, 1, exp_rate)
+        self.is_updated = True
         self.filter_proxy_model.setSourceModel(self.model)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        self.close_window.emit()
+        self.close_window.emit(self.is_updated)
         return super().closeEvent(a0)
+
+    def buttonCloseDialogWindow(self):
+        self.close_window.emit(self.is_updated)
 
     def eventExpenseNameChanged(self, text: str):
         if text.strip().lower() in self.list_expenses:
@@ -94,9 +99,6 @@ class WindowManageExpenses(QtWidgets.QWidget):
             self.ui.btn_delete.setEnabled(True)
         else:
             self.ui.btn_delete.setEnabled(False)
-
-    def buttonCloseDialogWindow(self):
-        self.close_window.emit()
 
     def buttonAddNew(self):
         """Add new expeneses or overhead in the database"""

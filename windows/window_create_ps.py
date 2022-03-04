@@ -7,10 +7,11 @@ from ui.ui_create_price_struct import Ui_DialogUpdateFromFile
 
 class WindowCreatePriceStructure(QtWidgets.QWidget):
 
-    close_window = QtCore.pyqtSignal()
+    close_window = QtCore.pyqtSignal(bool)  # Any changes made to db or not
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
+        self.is_updated: bool = False
         self.ui = Ui_DialogUpdateFromFile()
         self.ui.setupUi(self)
         self.ui.btn_choose_file.clicked.connect(self.choosePriceStructPath)
@@ -18,8 +19,12 @@ class WindowCreatePriceStructure(QtWidgets.QWidget):
         self.ui.btn_update.clicked.connect(self.updateTable)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        self.close_window.emit()
+        self.close_window.emit(self.is_updated)
         return super().closeEvent(a0)
+
+    def closeDialogWindow(self):
+        self.close_window.emit(self.is_updated)
+        # QtCore.QCoreApplication.instance().quit()
 
     def choosePriceStructPath(self):
         """Opens file dialog for choosing Materials file"""
@@ -28,10 +33,6 @@ class WindowCreatePriceStructure(QtWidgets.QWidget):
             None, "Open File", "./data", "Excel Files (*.xlsx)"
         )
         self.ui.text_file_path.setText(filename[0])
-
-    def closeDialogWindow(self):
-        self.close_window.emit()
-        # QtCore.QCoreApplication.instance().quit()
 
     def updateTable(self):
 
@@ -57,6 +58,7 @@ class WindowCreatePriceStructure(QtWidgets.QWidget):
         if success:
             dialog.setWindowTitle("Done")
             dialog.setIcon(QtWidgets.QMessageBox.Icon.Information)
+            self.is_updated = True
         else:
             dialog.setWindowTitle("Failed!")
             dialog.setIcon(QtWidgets.QMessageBox.Icon.Warning)

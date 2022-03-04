@@ -9,10 +9,11 @@ QtCore.QDir.addSearchPath("icons", "icons")
 
 class WindowCreateBom(QtWidgets.QWidget):
 
-    close_window = QtCore.pyqtSignal()
+    close_window = QtCore.pyqtSignal(bool)  # Any changes made to db or not
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
+        self.is_updated: bool = False
         self.ui = Ui_DialogCreateBom()
         self.ui.setupUi(self)
         self.ui.progressBar.hide()
@@ -22,8 +23,12 @@ class WindowCreateBom(QtWidgets.QWidget):
         self.ui.btn_close.clicked.connect(self.closeDialogWindow)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        self.close_window.emit()
+        self.close_window.emit(self.is_updated)
         return super().closeEvent(a0)
+
+    def closeDialogWindow(self):
+        self.close_window.emit(self.is_updated)
+        # QtCore.QCoreApplication.instance().quit() #quit app
 
     def chooseBomPath(self) -> None:
         """Opens file dialog for choosing Bom file"""
@@ -40,10 +45,6 @@ class WindowCreateBom(QtWidgets.QWidget):
             None, "Open File", "./data", "Excel Files (*.xlsx)"
         )
         self.ui.text_materials_path.setText(filename[0])
-
-    def closeDialogWindow(self):
-        self.close_window.emit()
-        # QtCore.QCoreApplication.instance().quit()
 
     def updateTables(self):
         """Update bom, article list tables."""
@@ -81,6 +82,7 @@ class WindowCreateBom(QtWidgets.QWidget):
         if success:
             dialog.setWindowTitle("Done")
             dialog.setIcon(QtWidgets.QMessageBox.Icon.Information)
+            self.is_updated = True
         else:
             progress_fail_style = "QProgressBar::chunk{background-color:#db1212;border-radius: 2px;border: 1px solid #a1152a;}QProgressBar{text-align:center;border-radius: 2px;border: 1px solid #a1152a;}"
             self.ui.progressBar.setStyleSheet(progress_fail_style)

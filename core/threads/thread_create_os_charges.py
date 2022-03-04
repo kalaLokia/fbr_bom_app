@@ -2,6 +2,7 @@ import warnings
 
 import pandas as pd
 from PyQt6 import QtCore
+from sqlalchemy.exc import IntegrityError
 
 from database import SQL_T_CHARGES
 from database.database import engine
@@ -10,7 +11,8 @@ from database.sql_db import query_clean_os_charges
 
 class WorkerThreadOsCharges(QtCore.QThread):
     """
-    Create or re-create(if exists) tables "bom" and "article" in database.
+    Clean and bulk update table OSCharges in database.
+
     """
 
     completed = QtCore.pyqtSignal(bool, str)
@@ -52,7 +54,12 @@ class WorkerThreadOsCharges(QtCore.QThread):
                 df["printing"].astype(float)
                 df.fillna(0)
 
-                query_clean_os_charges()
+                status = query_clean_os_charges()
+                if not status:
+                    return (
+                        False,
+                        "Unable to clear database, check the connection with server.",
+                    )
 
                 df.to_sql(SQL_T_CHARGES, con=engine, if_exists="append", index=False)
 
@@ -68,6 +75,13 @@ class WorkerThreadOsCharges(QtCore.QThread):
                 False,
                 'Missing required columns in the record, expecting "article" | "stitching" | "printing"',
             )
+        except IntegrityError as e:
+            err = e.args[0].lower()
+            if "violation of primary key constraint" in err:
+                return (
+                    False,
+                    "Duplicate values found in the data, cannot update data.",
+                )
         except Exception as e:
             return (False, f"[108] Failed to load files,\n({e})")
 

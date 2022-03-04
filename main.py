@@ -1,4 +1,3 @@
-# FIXME: Handle SQL query exceptions
 # TODO: Introduce Alert, Confirmation dialogs in home screen
 # TODO: Handle multiple button click in a sec (timer | dialog)
 # TODO: Change the save location to user prefered or ask for location before exporting
