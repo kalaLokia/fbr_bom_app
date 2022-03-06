@@ -10,7 +10,7 @@ import pandas as pd
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.session import Session
 
-from settings import DB_CONN_STR
+from settings import DB_NAME
 
 from .database import Bom, Article, OSCharges, PriceStructure, engine, FixedRates
 from . import SQL_T_BOM
@@ -137,11 +137,11 @@ def query_fetch_bom_df(search_key: str, size: int) -> Union[pd.DataFrame, None]:
     # Recursive query
     raw_query = f"""WITH cte AS (
         SELECT *
-        FROM [{DB_CONN_STR}].[dbo].[{SQL_T_BOM}]
+        FROM [{DB_NAME}].[dbo].[{SQL_T_BOM}]
         WHERE father = '{search_key}'
         UNION ALL
         SELECT p.*
-        FROM [{DB_CONN_STR}].[dbo].[{SQL_T_BOM}] p
+        FROM [{DB_NAME}].[dbo].[{SQL_T_BOM}] p
         INNER JOIN cte ON cte.child = p.father
         WHERE
         cte.child Like '%{size}' OR cte.child Like '%l' OR cte.child Like '%g'

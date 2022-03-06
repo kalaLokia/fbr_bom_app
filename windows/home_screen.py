@@ -2,6 +2,7 @@ from pandas import DataFrame
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 
+from core.threads.thread_bulk_export_xl import WorkerThreadXlExport
 from core.utils.calculate_bom import BillOfMaterial
 from core.utils.cost_analysis import calculateProfit, generate_bulk_report
 from core.utils.create_excel_report import ExcelReporting
@@ -25,7 +26,9 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.menu_items = {}
+        self.active_article: str = None  # Currently active article displaying
         self.is_all_selected = False  # Table items
+        self.ui.widget_status.hide()  # hiding stats page initially
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
         self.articles_dict: dict[str, tuple[Article, PriceStructure, OSCharges]] = {}
         self.refreshDataModel()
@@ -56,7 +59,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
 
         # Connections to buttons
         self.ui.button_show_stats.clicked.connect(self.buttonShowStats)
-        self.ui.button_export_xl.clicked.connect(self.buttonExport)
+        self.ui.button_export_xl.clicked.connect(self.buttonExportBulk)
         self.ui.button_export_summary.clicked.connect(self.buttonExportSummaryReport)
         # TODO: Create new method to export only currently displaying item
         self.ui.button_export_xl_sub.clicked.connect(self.buttonExport)
@@ -151,10 +154,16 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
     def buttonShowStats(self) -> None:
         """Shows cost data"""
 
+        if not self.ui.widget_status.isVisible():
+            self.ui.widget_status.show()
         self.default_label_values()
         selection = self.ui.tableView.selectedIndexes()
-        if len(selection) == 1:
-            key = self.ui.tableView.model().data(selection[0])
+        if len(selection) >= 1:
+            # Stats of last selected item
+            basic_rate = 0
+            self.ui.button_show_stats.setDisabled(True)  # Disable button
+            key = self.ui.tableView.model().data(selection[-1])
+            self.active_article = key
             article = self.articles_dict[key][0]
             ps = self.articles_dict[key][1]  # Price Structure
             oc = self.articles_dict[key][2]  # Os Charge
@@ -169,6 +178,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                         "Do you want to add a new price structure?",
                     )
                     if reply_yes:
+                        self.ui.button_show_stats.setDisabled(False)
                         self.menu_manage_ps()
                         ps = "Pride"
                         if article.brand.lower() == "debongo":
@@ -181,11 +191,10 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                         self.menu_items["manage_ps"].ui.text_mrp.setText(
                             str(round(article.mrp, 2))
                         )
-
                         return
-
             else:
-                self.ui.label_Vbasic.setText(str(ps.basic))
+                basic_rate = ps.basic
+                self.ui.label_Vbasic.setText(str(basic_rate))
 
             # OSCharge missing
             if oc == None:
@@ -202,86 +211,135 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                     self.menu_items["manage_osc"].ui.text_print_rate.setText("0.0")
                     self.menu_items["manage_osc"].ui.text_stitch_rate.setText("0.0")
 
-                    return
+                self.ui.button_show_stats.setDisabled(False)
+                return
             else:
                 self.ui.label_Vprint.setText(str(oc.printing))
                 self.ui.label_Vstitch.setText(str(oc.stitching))
-            if not None in self.articles_dict[key]:
-                df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
-                if isinstance(df, DataFrame) and not df.empty:
-                    bom = BillOfMaterial(df, article.pairs_in_case)
-                    result = calculateProfit(
-                        basic_rate=ps.basic,
-                        os_charges=oc,
-                        fixed_rates=self.fixed_rates,
-                        material_cost=bom.get_cost_of_materials,
-                    )
-                    print(result)
-                    self.ui.label_Vcop.setText(str(round(result[0], 2)))
-                    self.ui.label_Vmc.setText(str(round(bom.get_cost_of_materials, 2)))
-                    self.ui.label_Vnetm.setText("{}%".format(round(result[-1], 2)))
-                    if result[-1] < 0:
-                        self.ui.label_Vnetm.setStyleSheet("color : red;border:0px;")
-                    else:
-                        self.ui.label_Vnetm.setStyleSheet("color: green;border:0px;")
 
-        elif selection == []:
-            print("No articles selected")
+            # if not None in self.articles_dict[key]:
+            df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
+            if isinstance(df, DataFrame) and not df.empty:
+                bom = BillOfMaterial(df, article.pairs_in_case)
+                result = calculateProfit(
+                    basic_rate=basic_rate,
+                    os_charges=oc,
+                    fixed_rates=self.fixed_rates,
+                    material_cost=bom.get_cost_of_materials,
+                )
+                print(result)
+                result_netm = round(result[-1], 2)
+                self.ui.label_Vcop.setText(str(round(result[0], 2)))
+                self.ui.label_Vmc.setText(str(round(bom.get_cost_of_materials, 2)))
+                if result_netm < 0:
+                    self.ui.label_Vnetm.setText("{}%".format(result_netm))
+                    self.ui.label_Vnetm.setStyleSheet("color : red;border:0px;")
+                elif result_netm == 0 and basic_rate == 0:
+                    self.ui.label_Vnetm.setText("NA")
+                    self.ui.label_Vnetm.setStyleSheet("color : grey;border:0px;")
+                else:
+                    self.ui.label_Vnetm.setText("{}%".format(result_netm))
+                    self.ui.label_Vnetm.setStyleSheet("color: green;border:0px;")
+
+            self.ui.button_show_stats.setDisabled(False)
         else:
-            # TODO: Show last selected article's cost
-            print("Too many articles selected, select only one.")
+            print("No articles selected")
 
-            print(f"Last selected: {self.ui.tableView.model().data(selection[-1])}")
-
-    def buttonExport(self) -> None:
+    def buttonExport(self, key: str = None) -> None:
         """
-        Export button functionality: export as excel file
+        Export single article report in excel format.
 
         """
 
         selections = self.ui.tableView.selectedIndexes()
-        if len(selections) >= 1:
+        if len(selections) <= 0:
+            print("No articles selected")
+            return
+
+        # Export actively selected article in stats
+        # If key is passed, export that
+        if not key:
+            key = self.active_article
+        article = self.articles_dict[key][0]
+        ps = self.articles_dict[key][1]  # Price Structure
+        oc = self.articles_dict[key][2]  # Os Charge
+        basic_rate = 0
+        if ps == None:
+            print(
+                f'No matching basic rate found for the brand mrp of "{article.article}"'
+            )
+        else:
+            basic_rate = ps.basic
+
+        if oc == None:
+            reply_yes = self.eventConfirmationDialog(
+                "Missing OSCharges!",
+                f'OS Charge is mandatory, do you want to add the missing OS-charge for "{article.article_code}" now?',
+            )
+
+            if reply_yes:
+                self.menu_manage_osc()
+                self.menu_items["manage_osc"].ui.text_article.setText(
+                    article.article_code
+                )
+                self.menu_items["manage_osc"].ui.text_print_rate.setText("0.0")
+                self.menu_items["manage_osc"].ui.text_stitch_rate.setText("0.0")
+            return
+
+        df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
+        if isinstance(df, DataFrame) and not df.empty:
+            bom = BillOfMaterial(df, article.pairs_in_case)
+            xl = ExcelReporting(
+                article,
+                oc,
+                basic_rate,
+                self.fixed_rates,
+                bom.rexine_df,
+                bom.component_df,
+                bom.moulding_df,
+                bom.packing_df,
+            )
+            xl.generateTable()
+            msg = f"Successfully exported {article.article} report."
+            self.eventCompletedDialog(msg)
+
+    def buttonExportBulk(self) -> None:
+        """
+        Export multiple article's report in excel format
+
+        """
+
+        selections = self.ui.tableView.selectedIndexes()
+        if len(selections) <= 0:
+            print("No articles selected")
+            return
+        elif len(selections) == 1:
+            # Export lastly selected article; which does not requires to be in a thread
+            key = self.ui.tableView.model().data(selections[-1])
+            self.buttonExport(key)
+        else:
+            self.ui.button_export_xl.setDisabled(True)  # Disable button
+            selected_articles = []
             for selection in selections:
                 key = self.ui.tableView.model().data(selection)
-                article = self.articles_dict[key][0]
-                ps = self.articles_dict[key][1]  # Price Structure
-                oc = self.articles_dict[key][2]  # Os Charge
+                selected_articles.append(self.articles_dict[key])
 
-                if ps == None:
-                    print(
-                        f'No matching basic rate found for the brand mrp of "{article.article}"'
-                    )
-                    continue
+            self.worker = WorkerThreadXlExport(selected_articles, self.fixed_rates)
+            self.worker.start()
 
-                if oc == None:
-                    print(
-                        f"""OS charges for the article "{article.article}" isn't given."""
-                    )
-                    continue
+            def task_completed(count):
+                msg = f"Successfully exported reports for {count} out of {len(selections)} articles."
+                self.eventCompletedDialog(msg)
+                self.ui.button_export_xl.setDisabled(False)
 
-                df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
-                if isinstance(df, DataFrame) and not df.empty:
-                    bom = BillOfMaterial(df, article.pairs_in_case)
-                    xl = ExcelReporting(
-                        article,
-                        oc,
-                        ps.basic,
-                        self.fixed_rates,
-                        bom.rexine_df,
-                        bom.component_df,
-                        bom.moulding_df,
-                        bom.packing_df,
-                    )
-                    xl.generateTable()
-        else:
-            print("No articles selected")
+            self.worker.completed.connect(task_completed)
 
     def buttonExportSummaryReport(self) -> None:
         """
-        Export all articles cost sheet summary.
+        Export all articles cost sheet summary (csv).
 
         """
-
+        # TODO: Make this in thread
         selections = self.ui.tableView.selectedIndexes()
         if len(selections) >= 20:
             data = []
@@ -472,6 +530,15 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         dialog.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
         response = dialog.exec()
 
-        if response == QtWidgets.QMessageBox.StandardButton.Yes:
+        if response == QtWidgets.QMessageBox.StandardButton.Ok:
             return True
         return False
+
+    def eventCompletedDialog(self, message) -> None:
+        dialog = QtWidgets.QMessageBox()
+        dialog.setWindowTitle("Successful")
+        dialog.setIcon(QtWidgets.QMessageBox.Icon.NoIcon)
+        dialog.setWindowIcon(QtGui.QIcon("icons/favicon.ico"))
+        dialog.setText(message)
+        dialog.setStandardButtons(QtWidgets.QMessageBox.StandardButton.Ok)
+        dialog.exec()

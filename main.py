@@ -9,7 +9,7 @@
 import sys, os
 
 from PyQt6 import QtWidgets, QtGui
-from sqlalchemy.exc import InterfaceError, OperationalError
+from sqlalchemy.exc import InterfaceError, OperationalError, ProgrammingError
 
 from settings import BASE_DIR, DB_CONN_STR, DB_HOST, DB_NAME
 
@@ -71,7 +71,13 @@ if __name__ == "__main__":
                 ErrorDialogWindow(
                     "[Error 503] Connection Rejected", f"{e.args[0]}", True
                 )
-
+        except ProgrammingError as e:
+            # Unique key constraints with same name already exists !!
+            ErrorDialogWindow(
+                "[Error 600] Issue with Database",
+                "Some tables in your database causing problem. Should only happens if someone created tables manually in db.",
+            )
+            print(e)
         except Exception as e:
             ErrorDialogWindow("[Error 666] Please report to me!", f"{e.args[0]}", True)
             print(f"Unknown Exception caught\n{e}")

@@ -72,7 +72,7 @@ class Article(Base):
 
     @property
     def get_filename(self):
-        return self.article + "_mnf.xlsx"
+        return self.article + " _fbr.xlsx"
 
 
 class OSCharges(Base):
