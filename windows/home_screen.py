@@ -2,9 +2,12 @@ from pandas import DataFrame
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 
-from core.threads.thread_bulk_export_xl import WorkerThreadXlExport
+from core.threads.thread_bulk_export_xl import (
+    WorkerThreadXlExport,
+    WorkerThreadXlExportSummary,
+)
 from core.utils.calculate_bom import BillOfMaterial
-from core.utils.cost_analysis import calculateProfit, generate_bulk_report
+from core.utils.cost_analysis import calculateProfit
 from core.utils.create_excel_report import ExcelReporting
 from database import sql_db
 from database.database import PriceStructure, OSCharges, Article
@@ -339,61 +342,28 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         Export all articles cost sheet summary (csv).
 
         """
-        # TODO: Make this in thread
+
         selections = self.ui.tableView.selectedIndexes()
-        if len(selections) >= 20:
-            data = []
+        if len(selections) < 10:
+            print("Required minimum number of articles is 20 to get the report.")
+            return
+        else:
+            self.ui.button_export_summary.setDisabled(True)  # Disable button
+            selected_articles = []
             for selection in selections:
                 key = self.ui.tableView.model().data(selection)
-                article = self.articles_dict[key][0]
-                ps = self.articles_dict[key][1]  # Price Structure
-                oc = self.articles_dict[key][2]  # Os Charge
+                selected_articles.append(self.articles_dict[key])
+            self.worker = WorkerThreadXlExportSummary(
+                selected_articles, self.fixed_rates
+            )
+            self.worker.start()
 
-                if ps == None:
-                    print(
-                        f'No matching basic rate found for the brand mrp of "{article.article}"'
-                    )
-                    continue
+            def task_completed(count):
+                msg = f"Successfully exported summary report for {count} out of {len(selections)} articles."
+                self.eventCompletedDialog(msg)
+                self.ui.button_export_summary.setDisabled(False)
 
-                if oc == None:
-                    print(
-                        f"""OS charges for the article "{article.article}" isn't given."""
-                    )
-                    continue
-
-                df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
-                if isinstance(df, DataFrame) and not df.empty:
-                    bom = BillOfMaterial(df, article.pairs_in_case)
-
-                    data.append(
-                        [
-                            article.art_no,
-                            article.category,
-                            article.color,
-                            article.article_code,
-                            oc.stitch_rate,
-                            oc.print_rate,
-                            bom.get_cost_of_materials,
-                            ps.basic,
-                            ps.mrp,
-                        ]
-                    )
-            if len(data) >= 10:
-                columns = [
-                    "Art No",
-                    "Category",
-                    "Color",
-                    "Sap Code",
-                    "Stitching Rate",
-                    "Printing Rate",
-                    "Cost of Materials",
-                    "Basic Rate",
-                    "MRP",
-                ]
-                df = DataFrame(data, columns=columns)
-                generate_bulk_report(df, self.fixed_rates)
-        else:
-            print("Required minimum number of articles is 20 to get the report.")
+            self.worker.completed.connect(task_completed)
 
     # Menu item functions
     def menu_close_app(self) -> None:
