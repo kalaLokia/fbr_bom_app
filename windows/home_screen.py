@@ -1,3 +1,5 @@
+import os
+
 from pandas import DataFrame
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
@@ -11,6 +13,7 @@ from core.utils.cost_analysis import calculateProfit
 from core.utils.create_excel_report import ExcelReporting
 from database import sql_db
 from database.database import PriceStructure, OSCharges, Article
+from settings import EXPORT_DIR
 from ui.ui_main_window import Ui_MainWindow
 from windows.window_create_bom import WindowCreateBom
 from windows.window_create_osc import WindowCreateOsCharges
@@ -105,6 +108,8 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         else:
             self.model = None
         self.filter_proxy_model.setSourceModel(self.model)
+        self.ui.button_export_xl.setDisabled(False)
+        self.ui.button_export_summary.setDisabled(False)
 
     def tableSelectAll(self) -> None:
         """Select or Unselect all check boxes in the table
@@ -289,6 +294,19 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                 self.menu_items["manage_osc"].ui.text_stitch_rate.setText("0.0")
             return
 
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Save Detailed Report",
+            os.pathsep.join(EXPORT_DIR, article.get_filename),
+            "Excel Files (*.xlsx)",
+        )
+
+        if not filename:
+            return
+        else:
+            if filename.split(".")[-1] != "xlsx":
+                filename = filename.split(".")[:-1] + ".xlsx"
+
         df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
         if isinstance(df, DataFrame) and not df.empty:
             bom = BillOfMaterial(df, article.pairs_in_case)
@@ -302,8 +320,9 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                 bom.moulding_df,
                 bom.packing_df,
             )
-            xl.generateTable()
-            msg = f"Successfully exported {article.article} report."
+            xl.generateTable(filename=filename)
+            msg = f"Successfully exported {article.article} 's report."
+            # Make it to ask whether open file or not
             self.eventCompletedDialog(msg)
 
     def buttonExportBulk(self) -> None:
@@ -321,13 +340,21 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
             key = self.ui.tableView.model().data(selections[-1])
             self.buttonExport(key)
         else:
+            filepath = QtWidgets.QFileDialog.getExistingDirectory(
+                self, "Save Reports In", EXPORT_DIR
+            )
+            if not filepath:
+                return
+
             self.ui.button_export_xl.setDisabled(True)  # Disable button
             selected_articles = []
             for selection in selections:
                 key = self.ui.tableView.model().data(selection)
                 selected_articles.append(self.articles_dict[key])
 
-            self.worker = WorkerThreadXlExport(selected_articles, self.fixed_rates)
+            self.worker = WorkerThreadXlExport(
+                selected_articles, self.fixed_rates, filepath
+            )
             self.worker.start()
 
             def task_completed(count):
@@ -346,15 +373,33 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         selections = self.ui.tableView.selectedIndexes()
         if len(selections) < 10:
             print("Required minimum number of articles is 20 to get the report.")
+            self.eventAlertDialog(
+                "Too Small Data",
+                "Minimum 10 articles are required to generate the summary report.",
+            )
             return
         else:
+            filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self,
+                "Save Detailed Report",
+                os.path.join(EXPORT_DIR, "Cost Analysis Report _fbr.csv"),
+                "CSV Files (*.csv)",
+            )
+
+            if not filename:
+                return
+            else:
+                # If user entered invalid file type
+                if filename.split(".")[-1] != "csv":
+                    filename = filename.split(".")[:-1] + ".csv"
+
             self.ui.button_export_summary.setDisabled(True)  # Disable button
             selected_articles = []
             for selection in selections:
                 key = self.ui.tableView.model().data(selection)
                 selected_articles.append(self.articles_dict[key])
             self.worker = WorkerThreadXlExportSummary(
-                selected_articles, self.fixed_rates
+                selected_articles, self.fixed_rates, filename
             )
             self.worker.start()
 

@@ -4,7 +4,7 @@ from datetime import datetime
 from settings import EXPORT_DIR
 
 if TYPE_CHECKING:
-    from database.database import OSCharges
+    from database.database import OSCharges, FixedRates
 
 
 def calculateProfit(
@@ -50,7 +50,9 @@ def calculateProfit(
     return (cost_of_prod, total_cost, net_margin_percent)
 
 
-def generate_bulk_report(df, fixed_rates) -> None:
+def generate_bulk_report(
+    df, fixed_rates: list["FixedRates"], filename: str = None
+) -> None:
     """
     Create cost sheet summary report.
     """
@@ -60,11 +62,12 @@ def generate_bulk_report(df, fixed_rates) -> None:
     SALES_RETURN = 0
 
     for rate in fixed_rates:
-        if rate.rate_type.upper() == "OH":
+        rate_type = rate.rate_type.upper()
+        if rate_type == "OH":
             EXPENSES_OVERHEADS += rate.value
-        elif rate.rate_type.upper() == "OC":
+        elif rate_type == "RY" or rate_type == "SD":
             SELL_DISTR_ROYALTY += rate.value / 100
-        elif rate.rate_type.upper() == "SR":
+        elif rate_type == "SR":
             SALES_RETURN += rate.value / 100
 
     df["Cost of Upper Prod"] = (
@@ -79,7 +82,8 @@ def generate_bulk_report(df, fixed_rates) -> None:
         (df["Basic Rate"] - df["Total Cost"]) / df["Basic Rate"] * 100
     ).round(2)
 
-    filename = f"{EXPORT_DIR}/Cost Analysis Report [{0}].csv".format(
-        datetime.now().strftime("%d%m%y%H%M%S")
-    )
-    df.to_csv(filename)
+    if not filename:
+        filename = f"{EXPORT_DIR}/Cost Analysis Report [{0}].csv".format(
+            datetime.now().strftime("%d%m%y%H%M%S")
+        )
+    df.to_csv(filename, mode="w+")

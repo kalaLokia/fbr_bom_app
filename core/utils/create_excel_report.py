@@ -517,7 +517,18 @@ class ExcelReporting:
         self.worksheet.write(end - 1, 6, self.article.mrp, fmt_BR)  # mrp
         self.worksheet.merge_range(f"B{start}:C{end}", "")
 
-    def generateTable(self):
+    def generateTable(self, filename: str = None, filepath: str = None):
+        """
+        Generate report file.
+
+        Args:
+            :filename: - Filename with full path
+            :filepath: - Full path to file saving directory
+
+        Only one of the argument is considered, priority to `filename`
+
+        """
+
         output = BytesIO()
         writer = pd.ExcelWriter(output, engine="xlsxwriter")
         self.workbook = writer.book
@@ -575,7 +586,14 @@ class ExcelReporting:
             {"type": "no_blanks", "format": fmt_rate},
         )
         writer.save()
-        filename = EXPORT_DIR + "/" + self.article.get_filename
+
+        if not filename:
+            filename = self.article.get_filename
+            if not filepath:
+                filename = EXPORT_DIR + "/" + filename
+            else:
+                filename = filepath + "/" + filename
+
         status = self.write_bytes_to_xlsx(output, filename)
         return status
 

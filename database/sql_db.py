@@ -410,7 +410,7 @@ def query_delete_expenses(items: list[str]) -> tuple[bool, str]:
     return response
 
 
-def query_fetch_fixed_rates() -> list[FixedRates]:
+def query_fetch_fixed_charges() -> list[FixedRates]:
     """Fetch all excepts overheads from table fixed rates"""
 
     result = None
@@ -427,7 +427,7 @@ def query_fetch_fixed_rates() -> list[FixedRates]:
     return result
 
 
-def query_update_fixed_rates(
+def query_update_fixed_charges(
     royality: float = None, sell_distr: float = None, sales_ret: float = None
 ) -> tuple[bool, str]:
     response = (False, "Unknown Error")

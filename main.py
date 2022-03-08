@@ -1,6 +1,6 @@
-# TODO: Change the save location to user prefered or ask for location before exporting
 # TODO: Progress indicator for bulk exporting
-# TODO: Create app log window; detailed logging for all errors, warnings.
+# TODO: Option to hide stats widget
+# TODO: Create app log window in menu help; detailed logging for all errors, warnings.
 # TODO: Create readme
 # TODO: Write module level descriptions
 # TODO: Create packaging notes

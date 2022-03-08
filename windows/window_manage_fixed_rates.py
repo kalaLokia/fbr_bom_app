@@ -1,6 +1,6 @@
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from database.sql_db import query_fetch_fixed_rates, query_update_fixed_rates
+from database.sql_db import query_fetch_fixed_charges, query_update_fixed_charges
 from ui.ui_manage_fixed_charges import Ui_DialogManageFixedCharge
 
 
@@ -24,7 +24,7 @@ class WindowManageFixedCharges(QtWidgets.QWidget):
         return super().closeEvent(a0)
 
     def refreshDataModel(self):
-        fixed_rates = query_fetch_fixed_rates()
+        fixed_rates = query_fetch_fixed_charges()
         for fc in fixed_rates:
             if fc.rate_type == "RY":
                 self.royality = round(fc.value, 2)
@@ -68,7 +68,7 @@ class WindowManageFixedCharges(QtWidgets.QWidget):
             sr == None
 
         if ry != None or sd != None or sr != None:
-            status, res = query_update_fixed_rates(
+            status, res = query_update_fixed_charges(
                 royality=ry, sell_distr=sd, sales_ret=sr
             )
             if status:
