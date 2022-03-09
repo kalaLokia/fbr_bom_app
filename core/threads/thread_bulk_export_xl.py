@@ -1,3 +1,4 @@
+import math
 from typing import TYPE_CHECKING
 
 import pandas as pd
@@ -17,6 +18,7 @@ class WorkerThreadXlExport(QtCore.QThread):
     """Thread to export multiple articles bom report in excel format"""
 
     completed = QtCore.pyqtSignal(int)
+    progress = QtCore.pyqtSignal(int)
 
     def __init__(
         self,
@@ -35,7 +37,11 @@ class WorkerThreadXlExport(QtCore.QThread):
 
         # Show the status application
         success_count = 0
+        count = 0
+        total_count = len(self.articles_data)
         for article, ps, oc in self.articles_data:
+            self.progress.emit(math.trunc(count / total_count * 100))
+            count += 1
             basic_rate = 0
             if ps == None:
                 print(
@@ -68,6 +74,7 @@ class WorkerThreadXlExport(QtCore.QThread):
                 xl.generateTable(filepath=self.path)
                 success_count += 1
 
+        self.progress.emit(100)
         self.completed.emit(success_count)
 
 
@@ -75,6 +82,7 @@ class WorkerThreadXlExportSummary(QtCore.QThread):
     """Thread to export multiple articles bom report in excel format"""
 
     completed = QtCore.pyqtSignal(int)
+    progress = QtCore.pyqtSignal(int)
 
     def __init__(
         self,
@@ -94,7 +102,11 @@ class WorkerThreadXlExportSummary(QtCore.QThread):
         # Show the status application
         success_count = 0
         data = []
+        count = 0
+        total_count = len(self.articles_data)
         for article, ps, oc in self.articles_data:
+            self.progress.emit(math.trunc(count / total_count * 100))
+            count += 1
             if ps == None:
                 print(
                     f'No matching basic rate found for the brand mrp of "{article.article}"'
@@ -141,6 +153,8 @@ class WorkerThreadXlExportSummary(QtCore.QThread):
             generate_bulk_report(df, self.fixed_rates, self.filename)
 
         else:
+            self.progress.emit(0)
             self.completed.emit(0)
             return
+        self.progress.emit(100)
         self.completed.emit(success_count)

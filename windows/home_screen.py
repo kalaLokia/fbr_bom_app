@@ -4,10 +4,8 @@ from pandas import DataFrame
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 
-from core.threads.thread_bulk_export_xl import (
-    WorkerThreadXlExport,
-    WorkerThreadXlExportSummary,
-)
+from core.threads.thread_bulk_export_xl import WorkerThreadXlExport
+from core.threads.thread_bulk_export_xl import WorkerThreadXlExportSummary
 from core.utils.calculate_bom import BillOfMaterial
 from core.utils.cost_analysis import calculateProfit
 from core.utils.create_excel_report import ExcelReporting
@@ -32,9 +30,12 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.menu_items = {}
+        self.threads_count = 0
         self.active_article: str = None  # Currently active article displaying
         self.is_all_selected = False  # Table items
-        self.ui.widget_status.hide()  # hiding stats page initially
+        # hiding stats, progress widgets in startup
+        self.ui.widget_status.hide()
+        self.ui.progressBar.hide()
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
         self.articles_dict: dict[str, tuple[Article, PriceStructure, OSCharges]] = {}
         self.refreshDataModel()
@@ -67,8 +68,8 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.ui.button_show_stats.clicked.connect(self.buttonShowStats)
         self.ui.button_export_xl.clicked.connect(self.buttonExportBulk)
         self.ui.button_export_summary.clicked.connect(self.buttonExportSummaryReport)
-        # TODO: Create new method to export only currently displaying item
         self.ui.button_export_xl_sub.clicked.connect(self.buttonExport)
+        self.ui.label_hideme.mouseReleaseEvent = self.event_hide_stats_widget
 
         # Connections to menu items
         self.ui.actionRefresh.triggered.connect(self.refreshDataModel)
@@ -86,6 +87,10 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
     def refreshDataModel(self) -> None:
         """Refresh data from server"""
 
+        if self.threads_count < 0:
+            self.threads_count = 0  # reset
+            if not self.ui.progressBar.isHidden():
+                self.ui.progressBar.hide()
         articles = sql_db.query_fetch_articles_list()
         self.fixed_rates = sql_db.query_fetch_fixed_rates()
         if articles:
@@ -110,6 +115,9 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.filter_proxy_model.setSourceModel(self.model)
         self.ui.button_export_xl.setDisabled(False)
         self.ui.button_export_summary.setDisabled(False)
+
+    def event_hide_stats_widget(self, event):
+        self.ui.widget_status.hide()
 
     def tableSelectAll(self) -> None:
         """Select or Unselect all check boxes in the table
@@ -351,17 +359,24 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
             for selection in selections:
                 key = self.ui.tableView.model().data(selection)
                 selected_articles.append(self.articles_dict[key])
-
+            self.threads_count += 1
+            if self.ui.progressBar.isHidden():
+                self.ui.progressBar.show()
             self.worker = WorkerThreadXlExport(
                 selected_articles, self.fixed_rates, filepath
             )
             self.worker.start()
 
             def task_completed(count):
+                self.threads_count -= 1
                 msg = f"Successfully exported reports for {count} out of {len(selections)} articles."
                 self.eventCompletedDialog(msg)
                 self.ui.button_export_xl.setDisabled(False)
+                if self.ui.progressBar.value() == 100:
+                    self.ui.progressBar.setValue(0)
+                    self.ui.progressBar.hide()
 
+            self.worker.progress.connect(lambda x: self.ui.progressBar.setValue(x))
             self.worker.completed.connect(task_completed)
 
     def buttonExportSummaryReport(self) -> None:
@@ -398,16 +413,28 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
             for selection in selections:
                 key = self.ui.tableView.model().data(selection)
                 selected_articles.append(self.articles_dict[key])
+            self.threads_count += 1
+            if self.ui.progressBar.isHidden():
+                self.ui.progressBar.show()
             self.worker = WorkerThreadXlExportSummary(
                 selected_articles, self.fixed_rates, filename
             )
             self.worker.start()
 
             def task_completed(count):
+                self.threads_count -= 1
                 msg = f"Successfully exported summary report for {count} out of {len(selections)} articles."
                 self.eventCompletedDialog(msg)
                 self.ui.button_export_summary.setDisabled(False)
+                if self.ui.progressBar.value() == 100:
+                    self.ui.progressBar.setValue(0)
+                    self.ui.progressBar.hide()
 
+            self.worker.progress.connect(
+                lambda x: self.ui.progressBar.setValue(x)
+                if self.threads_count == 1
+                else None
+            )
             self.worker.completed.connect(task_completed)
 
     # Menu item functions

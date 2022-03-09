@@ -1,5 +1,4 @@
 # TODO: Progress indicator for bulk exporting
-# TODO: Option to hide stats widget
 # TODO: Create app log window in menu help; detailed logging for all errors, warnings.
 # TODO: Create readme
 # TODO: Write module level descriptions
