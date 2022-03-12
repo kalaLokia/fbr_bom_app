@@ -1,5 +1,5 @@
-# TODO: Progress indicator for bulk exporting
-# TODO: Create app log window in menu help; detailed logging for all errors, warnings.
+# FIXME: Logging live slow downs GUI
+# TODO: Use python logging module
 # TODO: Create readme
 # TODO: Write module level descriptions
 # TODO: Create packaging notes

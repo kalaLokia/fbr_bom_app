@@ -1,4 +1,5 @@
 import os
+
 from PyQt6 import QtCore, QtGui, QtWidgets
 
 from ui.ui_create_bom import Ui_DialogCreateBom

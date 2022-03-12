@@ -1,9 +1,12 @@
+import datetime
 import os
+from time import time
 
 from pandas import DataFrame
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 
+from core.core import LogType
 from core.threads.thread_bulk_export_xl import WorkerThreadXlExport
 from core.threads.thread_bulk_export_xl import WorkerThreadXlExportSummary
 from core.utils.calculate_bom import BillOfMaterial
@@ -20,6 +23,7 @@ from windows.window_manage_osc import WindowManageOsCharges
 from windows.window_manage_ps import WindowManagePriceStructure
 from windows.window_manage_expenses import WindowManageExpenses
 from windows.window_manage_fixed_rates import WindowManageFixedCharges
+from windows.window_app_logs import WindowAppLogs
 
 
 class WindowHomeScreen(QtWidgets.QMainWindow):
@@ -33,7 +37,8 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.threads_count = 0
         self.active_article: str = None  # Currently active article displaying
         self.is_all_selected = False  # Table items
-        # hiding stats, progress widgets in startup
+        # setting up widgets in startup
+        self.widget_logs = WindowAppLogs()
         self.ui.widget_status.hide()
         self.ui.progressBar.hide()
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
@@ -70,8 +75,10 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.ui.button_export_summary.clicked.connect(self.buttonExportSummaryReport)
         self.ui.button_export_xl_sub.clicked.connect(self.buttonExport)
         self.ui.label_hideme.mouseReleaseEvent = self.event_hide_stats_widget
-
         # Connections to menu items
+        # self.menu_items["app_logs"].close_window.connect(
+        #     lambda: self.menu_items["app_logs"].hide()
+        # )
         self.ui.actionRefresh.triggered.connect(self.refreshDataModel)
         self.ui.actionClose.triggered.connect(self.menu_close_app)
         self.ui.actionUpgradeBom.triggered.connect(self.menu_create_bom)
@@ -83,6 +90,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.ui.actionUpdateFixed_Charges.triggered.connect(
             self.menu_manage_fixed_charges
         )
+        self.ui.actionLogs.triggered.connect(lambda: self.widget_logs.show())
 
     def refreshDataModel(self) -> None:
         """Refresh data from server"""
@@ -115,6 +123,12 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.filter_proxy_model.setSourceModel(self.model)
         self.ui.button_export_xl.setDisabled(False)
         self.ui.button_export_summary.setDisabled(False)
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        # Close all sub windows when main window closes
+        for window in QtWidgets.QApplication.topLevelWidgets():
+            window.close()
+        return super().closeEvent(a0)
 
     def event_hide_stats_widget(self, event):
         self.ui.widget_status.hide()
@@ -189,6 +203,8 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
 
             if ps == None:
                 if article.mrp > 0:
+                    log_msg = f'Missing price structure  for "{article.brand} - {article.mrp} mrp!"'
+                    self.widget_logs.updateLog(LogType.WARNING, log_msg)
                     reply_yes = self.eventConfirmationDialog(
                         "Missing Basic Rate!",
                         "Do you want to add a new price structure?",
@@ -208,12 +224,16 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                             str(round(article.mrp, 2))
                         )
                         return
+                    log_msg = "Proceeding without setting price structure."
+                    self.widget_logs.updateLog(LogType.INFO, log_msg)
             else:
                 basic_rate = ps.basic
                 self.ui.label_Vbasic.setText(str(basic_rate))
 
             # OSCharge missing
             if oc == None:
+                log_msg = f'Missinng OS Charges for the article "{article.article}"!'
+                self.widget_logs.updateLog(LogType.WARNING, log_msg)
                 reply_yes = self.eventConfirmationDialog(
                     "Missing OSCharges!",
                     f'OS Charge is mandatory, do you want to add the missing OS-charge for "{article.article_code}" now?',
@@ -243,7 +263,6 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                     fixed_rates=self.fixed_rates,
                     material_cost=bom.get_cost_of_materials,
                 )
-                print(result)
                 result_netm = round(result[-1], 2)
                 self.ui.label_Vcop.setText(str(round(result[0], 2)))
                 self.ui.label_Vmc.setText(str(round(bom.get_cost_of_materials, 2)))
@@ -257,9 +276,14 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                     self.ui.label_Vnetm.setText("{}%".format(result_netm))
                     self.ui.label_Vnetm.setStyleSheet("color: green;border:0px;")
 
+                self.widget_logs.updateLog(
+                    LogType.INFO,
+                    f"Successfully fetched bom data for article {article.article}",
+                )
             self.ui.button_show_stats.setDisabled(False)
         else:
-            print("No articles selected")
+            # No articles selected, skipping
+            return
 
     def buttonExport(self, key: str = None) -> None:
         """
@@ -269,7 +293,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
 
         selections = self.ui.tableView.selectedIndexes()
         if len(selections) <= 0:
-            print("No articles selected")
+            # No articles selected
             return
 
         # Export actively selected article in stats
@@ -281,13 +305,16 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         oc = self.articles_dict[key][2]  # Os Charge
         basic_rate = 0
         if ps == None:
-            print(
+            log_msg = (
                 f'No matching basic rate found for the brand mrp of "{article.article}"'
             )
+            self.widget_logs.updateLog(LogType.WARNING, log_msg)
         else:
             basic_rate = ps.basic
 
         if oc == None:
+            log_msg = f'Missinng OS Charges for the article "{article.article}"!'
+            self.widget_logs.updateLog(LogType.WARNING, log_msg)
             reply_yes = self.eventConfirmationDialog(
                 "Missing OSCharges!",
                 f'OS Charge is mandatory, do you want to add the missing OS-charge for "{article.article_code}" now?',
@@ -329,9 +356,13 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                 bom.packing_df,
             )
             xl.generateTable(filename=filename)
-            msg = f"Successfully exported {article.article} 's report."
+            msg = f"Successfully exported {article.article} 's report"
+            self.widget_logs.updateLog(LogType.INFO, msg + f" in {filename}")
             # Make it to ask whether open file or not
             self.eventCompletedDialog(msg)
+        else:
+            log_msg = f'Failed to fetch data for "{article.article}"'
+            self.widget_logs.updateLog(LogType.WARNING, log_msg)
 
     def buttonExportBulk(self) -> None:
         """
@@ -341,7 +372,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
 
         selections = self.ui.tableView.selectedIndexes()
         if len(selections) <= 0:
-            print("No articles selected")
+            # No articles selected
             return
         elif len(selections) == 1:
             # Export lastly selected article; which does not requires to be in a thread
@@ -378,6 +409,17 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
 
             self.worker.progress.connect(lambda x: self.ui.progressBar.setValue(x))
             self.worker.completed.connect(task_completed)
+            # FIXME: Freezes UI a bit
+            # self.worker.error_log.connect(
+            #     lambda m: self.widget_logs.updateLog(LogType.WARNING, m)
+            # )
+            # Temp logging
+            def temp_log(m):
+                self.logged_msg += fmt.format(datetime.datetime.now().time(), m)
+
+            fmt = '({}) <font color="#ffff00"><strong>warning:<strong></font> <font color=white> {}</font><br/>'
+            self.logged_msg = ""
+            self.worker.error_log.connect(temp_log)
 
     def buttonExportSummaryReport(self) -> None:
         """
@@ -387,7 +429,11 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
 
         selections = self.ui.tableView.selectedIndexes()
         if len(selections) < 10:
-            print("Required minimum number of articles is 20 to get the report.")
+
+            self.widget_logs.updateLog(
+                LogType.INFO,
+                "Required minimum number of articles are 10 to get the report.",
+            )
             self.eventAlertDialog(
                 "Too Small Data",
                 "Minimum 10 articles are required to generate the summary report.",
@@ -436,6 +482,17 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                 else None
             )
             self.worker.completed.connect(task_completed)
+            # FIXME: Freezes UI a bit on live
+            # self.worker.error_log.connect(
+            #     lambda m: self.widget_logs.updateLog(LogType.WARNING, m)
+            # )
+            # Temp logging
+            def temp_log(m):
+                self.logged_msg += fmt.format(datetime.datetime.now().time(), m)
+
+            fmt = '({}) <font color="#ffff00"><strong>warning:<strong></font> <font color=white> {}</font><br/>'
+            self.logged_msg = ""
+            self.worker.error_log.connect(temp_log)
 
     # Menu item functions
     def menu_close_app(self) -> None:

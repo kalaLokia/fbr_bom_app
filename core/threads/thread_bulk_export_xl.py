@@ -19,6 +19,7 @@ class WorkerThreadXlExport(QtCore.QThread):
 
     completed = QtCore.pyqtSignal(int)
     progress = QtCore.pyqtSignal(int)
+    error_log = QtCore.pyqtSignal(str)
 
     def __init__(
         self,
@@ -44,16 +45,16 @@ class WorkerThreadXlExport(QtCore.QThread):
             count += 1
             basic_rate = 0
             if ps == None:
-                print(
-                    f'No matching basic rate found for the brand mrp of "{article.article}"'
+                self.error_log.emit(
+                    f'No matching basic rate found for "{article.brand} - {article.mrp}".'
                 )
                 # Show as warning
             else:
                 basic_rate = ps.basic
 
             if oc == None:
-                print(
-                    f"""OS charges for the article "{article.article}" isn't given."""
+                self.error_log.emit(
+                    f"""OS charges for the article "{article.article}" isn't given. Skipping..."""
                 )
                 # Show as skipped
                 continue
@@ -83,6 +84,7 @@ class WorkerThreadXlExportSummary(QtCore.QThread):
 
     completed = QtCore.pyqtSignal(int)
     progress = QtCore.pyqtSignal(int)
+    error_log = QtCore.pyqtSignal(str)
 
     def __init__(
         self,
@@ -108,15 +110,16 @@ class WorkerThreadXlExportSummary(QtCore.QThread):
             self.progress.emit(math.trunc(count / total_count * 100))
             count += 1
             if ps == None:
-                print(
-                    f'No matching basic rate found for the brand mrp of "{article.article}"'
+                self.error_log.emit(
+                    f'No matching basic rate found for "{article.brand} - {article.mrp}". Skipping {article.article}'
                 )
                 continue
 
             if oc == None:
-                print(
-                    f"""OS charges for the article "{article.article}" isn't given."""
+                self.error_log.emit(
+                    f"""OS charges for the article "{article.article}" isn't given. Skipping..."""
                 )
+
                 continue
 
             df = query_fetch_bom_df(article.sap_code, article.size)
