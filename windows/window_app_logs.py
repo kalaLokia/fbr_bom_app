@@ -30,3 +30,10 @@ class WindowAppLogs(QtWidgets.QWidget):
         # self.ui.text_logs.insertHtml(text)
         self.ui.text_logs.setText(log)
         self.ui.text_logs.moveCursor(QtGui.QTextCursor.MoveOperation.End)
+
+    # Temperory func till freeze issue is resolved
+    def updateLogBulk(self, new_log):
+        log = self.ui.text_logs.toHtml()
+        log += new_log
+        self.ui.text_logs.setText(log)
+        self.ui.text_logs.moveCursor(QtGui.QTextCursor.MoveOperation.End)

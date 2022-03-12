@@ -607,7 +607,6 @@ class ExcelReporting:
                 "message": f"Permission denied. Close the file ({self.article.get_filename}) if it is already being used.",
             }
         except Exception as e:
-            print(e)
             return {
                 "status": "ERR",
                 "message": f"Uncaught error:\n {e}",

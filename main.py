@@ -10,8 +10,6 @@ import sys, os
 from PyQt6 import QtWidgets, QtGui
 from sqlalchemy.exc import InterfaceError, OperationalError, ProgrammingError
 
-from settings import BASE_DIR, DB_CONN_STR, DB_HOST, DB_NAME
-
 
 def ErrorDialogWindow(title: str, message: str, bug: bool = False) -> None:
     """Dialog box to display errors"""
@@ -30,6 +28,13 @@ def ErrorDialogWindow(title: str, message: str, bug: bool = False) -> None:
 if __name__ == "__main__":
 
     ready = False
+
+    try:
+        from settings import BASE_DIR, DB_CONN_STR, DB_HOST, DB_NAME
+    except Exception as e:
+        DB_CONN_STR = None
+        ErrorDialogWindow("Windows Access Denied", "Missing required directory data!")
+
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle("Fusion")
     app.setWindowIcon(QtGui.QIcon(os.path.join(BASE_DIR, "icons", "logo.ico")))
@@ -76,10 +81,8 @@ if __name__ == "__main__":
                 "[Error 600] Issue with Database",
                 "Some tables in your database causing problem. Should only happens if someone created tables manually in db.",
             )
-            print(e)
         except Exception as e:
             ErrorDialogWindow("[Error 666] Please report to me!", f"{e.args[0]}", True)
-            print(f"Unknown Exception caught\n{e}")
 
         # All startup issues are cleaned, ready to launch application
         if ready:

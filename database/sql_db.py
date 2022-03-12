@@ -157,7 +157,6 @@ def query_fetch_bom_df(search_key: str, size: int) -> Union[pd.DataFrame, None]:
     try:
         df = pd.read_sql(raw_query, engine)
     except Exception as e:
-        print(e)
         df = None
 
     return df
@@ -509,6 +508,5 @@ def query_setup_charges_table() -> bool:
             s.bulk_save_objects(initial_values)
             s.commit()
     except Exception as e:
-        print(e)
         return False
     return True

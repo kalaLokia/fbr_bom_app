@@ -39,7 +39,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         self.is_all_selected = False  # Table items
         # setting up widgets in startup
         self.widget_logs = WindowAppLogs()
-        self.ui.widget_status.hide()
+        # self.ui.widget_status.hide()
         self.ui.progressBar.hide()
         self.filter_proxy_model = QtCore.QSortFilterProxyModel()
         self.articles_dict: dict[str, tuple[Article, PriceStructure, OSCharges]] = {}
@@ -406,6 +406,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                 if self.ui.progressBar.value() == 100:
                     self.ui.progressBar.setValue(0)
                     self.ui.progressBar.hide()
+                self.widget_logs.updateLogBulk(self.logged_msg)
 
             self.worker.progress.connect(lambda x: self.ui.progressBar.setValue(x))
             self.worker.completed.connect(task_completed)
@@ -414,11 +415,12 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
             #     lambda m: self.widget_logs.updateLog(LogType.WARNING, m)
             # )
             # Temp logging
+
             def temp_log(m):
                 self.logged_msg += fmt.format(datetime.datetime.now().time(), m)
 
-            fmt = '({}) <font color="#ffff00"><strong>warning:<strong></font> <font color=white> {}</font><br/>'
             self.logged_msg = ""
+            fmt = '({}) <font color="#ffff00"><strong>warning:<strong></font> <font color=white> {}</font><br/>'
             self.worker.error_log.connect(temp_log)
 
     def buttonExportSummaryReport(self) -> None:
@@ -475,6 +477,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                 if self.ui.progressBar.value() == 100:
                     self.ui.progressBar.setValue(0)
                     self.ui.progressBar.hide()
+                self.widget_logs.updateLogBulk(self.logged_msg2)
 
             self.worker.progress.connect(
                 lambda x: self.ui.progressBar.setValue(x)
@@ -488,10 +491,10 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
             # )
             # Temp logging
             def temp_log(m):
-                self.logged_msg += fmt.format(datetime.datetime.now().time(), m)
+                self.logged_msg2 += fmt.format(datetime.datetime.now().time(), m)
 
             fmt = '({}) <font color="#ffff00"><strong>warning:<strong></font> <font color=white> {}</font><br/>'
-            self.logged_msg = ""
+            self.logged_msg2 = ""
             self.worker.error_log.connect(temp_log)
 
     # Menu item functions
