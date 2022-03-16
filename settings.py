@@ -26,11 +26,11 @@ ok_config = config.read("config.ini")
 
 if ok_config:
     if config.has_option("DATABASE", "DB_HOST"):
-        DB_HOST = config.get("DATABASE", "DB_HOST")
+        DB_HOST = config.get("DATABASE", "DB_HOST").strip()
     if config.has_option("DATABASE", "DB_USER"):
-        DB_USER = config.get("DATABASE", "DB_USER")
+        DB_USER = config.get("DATABASE", "DB_USER").strip()
     if config.has_option("DATABASE", "DB_PASS"):
-        DB_PASS = config.get("DATABASE", "DB_PASS")
+        DB_PASS = config.get("DATABASE", "DB_PASS").strip()
 
     if DB_HOST and DB_NAME and DB_USER and DB_PASS:
         DB_CONN_STR = (
