@@ -29,6 +29,8 @@ def ErrorDialogWindow(title: str, message: str) -> None:
 if __name__ == "__main__":
 
     app_ready = False
+    app = QtWidgets.QApplication(sys.argv)
+    app.setStyle("Fusion")
 
     try:
         from settings import BASE_DIR, DB_CONN_STR, DB_HOST, DB_NAME
@@ -46,12 +48,10 @@ if __name__ == "__main__":
         if app_ready:
             ErrorDialogWindow(
                 "[Error 444] Connection Failed!",
-                "SQL Server connection parameters not found, failed to lanuch application.",
+                "SQL Server connection parameters not found, failed to launch application.",
             )
 
     else:
-        app = QtWidgets.QApplication(sys.argv)
-        app.setStyle("Fusion")
         app.setWindowIcon(QtGui.QIcon(os.path.join(BASE_DIR, "icons", "logo.ico")))
 
         loader = SplashScreen()

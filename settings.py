@@ -1,7 +1,14 @@
 import configparser
 import os
+import sys
 
-BASE_DIR = os.path.dirname(__file__)  # Root directory of app
+
+if getattr(sys, "frozen", False):
+    BASE_DIR = os.path.dirname(sys.executable)
+else:
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 EXPORT_DIR = os.path.join(BASE_DIR, "data")  # File default save location
 
 DB_HOST = None
