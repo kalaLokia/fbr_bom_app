@@ -332,7 +332,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(
             self,
             "Save Detailed Report",
-            os.pathsep.join(EXPORT_DIR, article.get_filename),
+            os.path.join(EXPORT_DIR, article.get_filename),
             "Excel Files (*.xlsx)",
         )
 

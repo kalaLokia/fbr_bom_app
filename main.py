@@ -62,6 +62,7 @@ if __name__ == "__main__":
             from settings import BASE_DIR
             from windows.home_screen import WindowHomeScreen
 
+            # Can include a `try-catch` to setup up an app fail logging
             MainWindow = WindowHomeScreen()
             MainWindow.show()
             sys.exit(app.exec())

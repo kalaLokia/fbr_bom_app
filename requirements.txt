@@ -4,3 +4,4 @@ pyodbc
 PyQt6
 sqlalchemy
 XlsxWriter==1.4.3
+# cx_Freez # Only for msi generation
