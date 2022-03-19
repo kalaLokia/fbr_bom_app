@@ -52,6 +52,7 @@ def query_clean_bom_articles() -> bool:
             s.commit()
     except:
         return False
+    return True
 
 
 def query_fetch_fixed_rates() -> list[FixedRates]:

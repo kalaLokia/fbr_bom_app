@@ -25,7 +25,7 @@ def calculateProfit(
     for rate in fixed_rates:
         if rate.rate_type.upper() == "OH":
             EXPENSES_OVERHEADS += rate.value
-        elif rate.rate_type.upper() == "OC":
+        elif rate.rate_type.upper() in ["RY", "SD"]:
             SELL_DISTR_ROYALTY += rate.value / 100
         elif rate.rate_type.upper() == "SR":
             SALES_RETURN += rate.value / 100

@@ -184,7 +184,9 @@ class WorkerThreadBom(QtCore.QThread):
         art_df["size_count"] = art_df["size_matrix"].apply(
             lambda x: self.getSizeCount(x)
         )
-        art_df.sort_values("size_count", inplace=True, ascending=False)
+        art_df.sort_values(
+            ["size_count", "father"], inplace=True, ascending=[False, True]
+        )
         art_df["brand"] = art_df["father_name"].apply(lambda x: x.split("-")[1].strip())
         art_df["art_no"] = art_df["father_name"].apply(
             lambda x: x.split("-")[2].strip()
