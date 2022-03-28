@@ -1,3 +1,7 @@
+import csv
+import datetime
+import os
+
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 
@@ -8,7 +12,9 @@ from database.sql_db import (
     query_fetch_all_price_structure,
     query_update_pstructure,
 )
+from settings import EXPORT_DIR
 from ui.ui_manage_ps import Ui_DialogManagePS
+
 
 QtCore.QDir.addSearchPath("icons", "icons")
 
@@ -54,6 +60,7 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
         self.ui.btn_save.clicked.connect(self.saveNewRecord)
         self.ui.btn_update.clicked.connect(self.updateRecord)
         self.ui.btn_delete.clicked.connect(self.deleteRecord)
+        self.ui.btn_export_all.clicked.connect(self.exportAllRecords)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         self.close_window.emit(self.is_updated)
@@ -228,6 +235,38 @@ class WindowManagePriceStructure(QtWidgets.QWidget):
                 self.eventAlertDialog("Successful", res)
             else:
                 self.eventAlertDialog("Failed to delete!", res)
+
+    def exportAllRecords(self):
+        """Export all records to a csv file"""
+
+        today = datetime.date.today()
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export All Price Structure",
+            os.path.join(EXPORT_DIR, f"Price Structure-{today}.csv"),
+            "CSV Files (*.csv)",
+        )
+
+        if not filename:
+            return
+        else:
+            # If user entered invalid file type
+            if filename.split(".")[-1] != "csv":
+                filename = filename.split(".")[:-1] + ".csv"
+        try:
+            with open(filename, mode="w", newline="") as csv_f:
+                writer = csv.writer(csv_f, delimiter=",")
+                writer.writerow(["price structure", "mrp", "basic", "ps name"])
+                for ps in self.pstructures:
+                    writer.writerow([ps.ps_code, ps.mrp, ps.basic, ps.get_price_struct])
+            self.eventAlertDialog(
+                "Price Structure Exported!",
+                f'Price Structure date in the database has been exported to "{filename}".',
+            )
+        except:
+            # don't wanna handle any errors
+            # OS error if file is already opened
+            pass
 
     def eventConfirmationDialog(self, message):
         dialog = QtWidgets.QMessageBox()

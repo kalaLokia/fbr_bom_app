@@ -1,15 +1,20 @@
+import csv
+import datetime
+import os
+
 from PyQt6 import QtCore, QtGui, QtWidgets
 from PyQt6.QtCore import Qt
 
-
-from ui.ui_manage_osc import Ui_DialogManageOSC
+from database.database import OSCharges
 from database.sql_db import (
     query_fetch_all_os_charges,
     query_add_os_charge,
     query_update_os_charge,
     query_delete_os_charges,
 )
-from database.database import OSCharges
+from settings import EXPORT_DIR
+from ui.ui_manage_osc import Ui_DialogManageOSC
+
 
 QtCore.QDir.addSearchPath("icons", "icons")
 
@@ -54,6 +59,7 @@ class WindowManageOsCharges(QtWidgets.QWidget):
         self.ui.btn_save.clicked.connect(self.saveNewRecord)
         self.ui.btn_update.clicked.connect(self.updateRecord)
         self.ui.btn_delete.clicked.connect(self.deleteRecord)
+        self.ui.btn_export_all.clicked.connect(self.exportAllRecords)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
         self.close_window.emit(self.is_updated)
@@ -200,6 +206,38 @@ class WindowManageOsCharges(QtWidgets.QWidget):
                 self.eventAlertDialog("Successful", res)
             else:
                 self.eventAlertDialog("Failed to delete!", res)
+
+    def exportAllRecords(self):
+        """Export all records to a csv file"""
+
+        today = datetime.date.today()
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self,
+            "Export All OS Charges",
+            os.path.join(EXPORT_DIR, f"OS Charges-{today}.csv"),
+            "CSV Files (*.csv)",
+        )
+
+        if not filename:
+            return
+        else:
+            # If user entered invalid file type
+            if filename.split(".")[-1] != "csv":
+                filename = filename.split(".")[:-1] + ".csv"
+        try:
+            with open(filename, mode="w", newline="") as csv_f:
+                writer = csv.writer(csv_f, delimiter=",")
+                writer.writerow(["article", "print charges", "stitch charges"])
+                for osc in self.os_charges:
+                    writer.writerow([osc.article, osc.printing, osc.stitching])
+            self.eventAlertDialog(
+                "OS Charges Exported!",
+                f'All Os Charges in the database has been exported to "{filename}".',
+            )
+        except:
+            # don't wanna handle any errors
+            # OS error if file is already opened
+            pass
 
     def eventConfirmationDialog(self, message):
         dialog = QtWidgets.QMessageBox()

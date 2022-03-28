@@ -13,5 +13,13 @@ The latest bom heirarchy and items data from SAP is used to update the applicati
 - xlsxwriter - For styled excel report
 
 <br/>
+
+## Prerequisite and Setup
+1. Download and install [ODBC Driver 17 for SQL Server](https://go.microsoft.com/fwlink/?linkid=2187214)
+2. Open and install the application: `Bom-[version]-win64.msi`
+4. Goto the installed directory and update `config.ini` file if the server credentials are different (Database name must be set to "harpy_eagle" in the sql server)
+
 <br/>
+<br/>
+
 Design and developed by kalaLokia  (#just me, that's why it is so messy)

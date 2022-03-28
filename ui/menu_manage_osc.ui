@@ -28,7 +28,7 @@
     <rect>
      <x>10</x>
      <y>170</y>
-     <width>360</width>
+     <width>321</width>
      <height>25</height>
     </rect>
    </property>
@@ -337,6 +337,23 @@
      </widget>
     </item>
    </layout>
+  </widget>
+  <widget class="QPushButton" name="btn_export_all">
+   <property name="geometry">
+    <rect>
+     <x>340</x>
+     <y>170</y>
+     <width>31</width>
+     <height>25</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>../icons/file-export-solid.svg</normaloff>../icons/file-export-solid.svg</iconset>
+   </property>
   </widget>
  </widget>
  <tabstops>
