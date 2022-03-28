@@ -20,6 +20,13 @@ The latest bom heirarchy and items data from SAP is used to update the applicati
 4. Goto the installed directory and update `config.ini` file if the server credentials are different (Database name must be set to "harpy_eagle" in the sql server)
 
 <br/>
+
+_The base concept of this project is came from my old `tkinter` ui based application: [fbr_costanalysis](https://github.com/kalaLokia/fbr_costanalysis)_
+
+<br/>
 <br/>
 
+
+
 Design and developed by kalaLokia  (#just me, that's why it is so messy)
+
