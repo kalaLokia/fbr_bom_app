@@ -48,6 +48,29 @@ if ok_config:
             rf"pwd={DB_PASS};"
             r"Integrated Security=false;"
         )
+    if config.has_option("GENERAL", "SAVE_DIR"):
+        EXPORT_DIR = config.get("GENERAL", "SAVE_DIR")
+
+    author = None
+    if config.has_option("GENERAL", "DEVELOPED_BY"):
+        author = config.get("GENERAL", "DEVELOPED_BY")
+        if author.lower() != "kalalokia":
+            author = None
+    if not author:
+        if not config.has_section("GENERAL"):
+            config.add_section("GENERAL")
+        config.set("GENERAL", "DEVELOPED_BY", "kalaLokia")
+        with open("config.ini", "w+") as f:
+            config.write(f)
+
+
+def update_default_save_dir(new_dir: str):
+    """Update default save location by the app"""
+    global config
+    config.set("GENERAL", "SAVE_DIR", new_dir)
+    with open("config.ini", "w+") as f:
+        config.write(f)
+
 
 # Required path verification
 os.makedirs(os.path.dirname(os.path.join(BASE_DIR, "data/test.txt")), exist_ok=True)

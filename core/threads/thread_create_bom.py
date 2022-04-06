@@ -343,10 +343,11 @@ class WorkerThreadBom(QtCore.QThread):
     @staticmethod
     def getSizeCount(size_matrix):
         """Total sizes in the given size matrix"""
-
-        small, big = size_matrix.split("x")
         try:
+            small, big = size_matrix.split("x")
             count = int(big) - int(small) + 1
+        except ValueError:
+            count = -1
         except:
             count = 0
         return count

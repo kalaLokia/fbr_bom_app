@@ -14,16 +14,16 @@ from core.utils.cost_analysis import calculateProfit
 from core.utils.create_excel_report import ExcelReporting
 from database import sql_db
 from database.database import PriceStructure, OSCharges, Article
-from settings import EXPORT_DIR
+from settings import EXPORT_DIR, update_default_save_dir
 from ui.ui_main_window import Ui_MainWindow
+from windows.window_app_logs import WindowAppLogs
 from windows.window_create_bom import WindowCreateBom
 from windows.window_create_osc import WindowCreateOsCharges
 from windows.window_create_ps import WindowCreatePriceStructure
-from windows.window_manage_osc import WindowManageOsCharges
-from windows.window_manage_ps import WindowManagePriceStructure
 from windows.window_manage_expenses import WindowManageExpenses
 from windows.window_manage_fixed_rates import WindowManageFixedCharges
-from windows.window_app_logs import WindowAppLogs
+from windows.window_manage_osc import WindowManageOsCharges
+from windows.window_manage_ps import WindowManagePriceStructure
 
 
 class WindowHomeScreen(QtWidgets.QMainWindow):
@@ -290,7 +290,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         Export single article report in excel format.
 
         """
-
+        global EXPORT_DIR
         selections = self.ui.tableView.selectedIndexes()
         if len(selections) <= 0:
             # No articles selected
@@ -341,6 +341,10 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         else:
             if filename.split(".")[-1] != "xlsx":
                 filename = filename.split(".")[:-1] + ".xlsx"
+        save_dir = "/".join(filename.split("/")[:-1])
+        if save_dir != EXPORT_DIR:
+            EXPORT_DIR = save_dir
+            update_default_save_dir(save_dir)
 
         df = sql_db.query_fetch_bom_df(article.sap_code, article.size)
         if isinstance(df, DataFrame) and not df.empty:
@@ -369,7 +373,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         Export multiple article's report in excel format
 
         """
-
+        global EXPORT_DIR
         selections = self.ui.tableView.selectedIndexes()
         if len(selections) <= 0:
             # No articles selected
@@ -384,6 +388,9 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
             )
             if not filepath:
                 return
+            if filepath != EXPORT_DIR:
+                EXPORT_DIR = filepath
+                update_default_save_dir(filepath)
 
             self.ui.button_export_xl.setDisabled(True)  # Disable button
             selected_articles = []
@@ -428,7 +435,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
         Export all articles cost sheet summary (csv).
 
         """
-
+        global EXPORT_DIR
         selections = self.ui.tableView.selectedIndexes()
         if len(selections) < 10:
 
@@ -455,6 +462,11 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
                 # If user entered invalid file type
                 if filename.split(".")[-1] != "csv":
                     filename = filename.split(".")[:-1] + ".csv"
+
+            save_dir = "/".join(filename.split("/")[:-1])
+            if save_dir != EXPORT_DIR:
+                EXPORT_DIR = save_dir
+                update_default_save_dir(save_dir)
 
             self.ui.button_export_summary.setDisabled(True)  # Disable button
             selected_articles = []

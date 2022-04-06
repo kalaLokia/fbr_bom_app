@@ -1,11 +1,10 @@
 # FIXME: Logging live slow downs GUI
 # TODO: Use python logging module
-# TODO: Create readme
-# TODO: Write module level descriptions
 # TODO: Create packaging notes
 
 
 import sys, os
+import datetime
 
 from PyQt6 import QtWidgets, QtGui
 
@@ -62,7 +61,11 @@ if __name__ == "__main__":
             from settings import BASE_DIR
             from windows.home_screen import WindowHomeScreen
 
-            # Can include a `try-catch` to setup up an app fail logging
-            MainWindow = WindowHomeScreen()
-            MainWindow.show()
-            sys.exit(app.exec())
+            try:
+                MainWindow = WindowHomeScreen()
+                MainWindow.show()
+                sys.exit(app.exec())
+            except Exception as e:
+                with open("log.txt", "a+") as f:
+                    f.write(f"--- {datetime.datetime.now()} --- ")
+                    f.write(e)

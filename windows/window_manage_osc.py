@@ -98,10 +98,19 @@ class WindowManageOsCharges(QtWidgets.QWidget):
         self.clearTextBoxValues()
 
     def eventTableDoubleClicked(self, modelIndex: QtCore.QModelIndex):
-        row = modelIndex.row()
-        self.ui.text_article.setText(self.os_charges[row].article)
-        self.ui.text_print_rate.setText(str(self.os_charges[row].printing))
-        self.ui.text_stitch_rate.setText(str(self.os_charges[row].stitching))
+        key = self.ui.tv_filter_box.model().index(modelIndex.row(), 0).data()
+        item = None
+        for osc in self.os_charges:
+            if osc.article == key:
+                item = osc
+                break
+        self.ui.text_article.setText(key)
+        if item:
+            self.ui.text_print_rate.setText(str(item.printing))
+            self.ui.text_stitch_rate.setText(str(item.stitching))
+        else:
+            self.ui.text_print_rate.setText("0.0")
+            self.ui.text_stitch_rate.setText("0.0")
 
     def eventTableSelectionChanged(
         self, selected: QtCore.QItemSelection, deselected: QtCore.QItemSelection

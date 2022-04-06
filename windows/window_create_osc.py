@@ -30,7 +30,7 @@ class WindowCreateOsCharges(QtWidgets.QWidget):
         """Opens file dialog for choosing Materials file"""
 
         filename = QtWidgets.QFileDialog.getOpenFileName(
-            None, "Open File", "./data", "Excel Files (*.xlsx)"
+            None, "Open File", "", "Excel Files (*.xlsx)"
         )
         self.ui.text_file_path.setText(filename[0])
 

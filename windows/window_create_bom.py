@@ -2,8 +2,8 @@ import os
 
 from PyQt6 import QtCore, QtGui, QtWidgets
 
-from ui.ui_create_bom import Ui_DialogCreateBom
 from core.threads.thread_create_bom import WorkerThreadBom
+from ui.ui_create_bom import Ui_DialogCreateBom
 
 QtCore.QDir.addSearchPath("icons", "icons")
 
@@ -35,7 +35,7 @@ class WindowCreateBom(QtWidgets.QWidget):
         """Opens file dialog for choosing Bom file"""
 
         filename = QtWidgets.QFileDialog.getOpenFileName(
-            None, "Open File", "./data", "Excel Files (*.xlsx)"
+            None, "Open File", "", "Excel Files (*.xlsx)"
         )
         self.ui.text_bom_path.setText(filename[0])
 
@@ -43,7 +43,7 @@ class WindowCreateBom(QtWidgets.QWidget):
         """Opens file dialog for choosing Materials file"""
 
         filename = QtWidgets.QFileDialog.getOpenFileName(
-            None, "Open File", "./data", "Excel Files (*.xlsx)"
+            None, "Open File", "", "Excel Files (*.xlsx)"
         )
         self.ui.text_materials_path.setText(filename[0])
 
