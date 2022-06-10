@@ -64,8 +64,9 @@ if __name__ == "__main__":
             try:
                 MainWindow = WindowHomeScreen()
                 MainWindow.show()
-                sys.exit(app.exec())
             except Exception as e:
                 with open("log.txt", "a+") as f:
                     f.write(f"--- {datetime.datetime.now()} --- ")
                     f.write(e)
+            finally:
+                sys.exit(app.exec())
