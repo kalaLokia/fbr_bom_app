@@ -176,10 +176,13 @@ class WorkerThreadBom(QtCore.QThread):
         art_df.drop_duplicates(inplace=True)
         cond = art_df.father_name.str.contains(
             r"\d[xX]\d"
-        ) & ~art_df.father.str.contains(r"^2-FB-0|^2-FB-S|^2-FB-7")
+        ) 
+        # For negleting other articles that does not belongs to us
+        # Currently skipping this check,
+        # & ~art_df.father.str.contains(r"^2-FB-0|^2-FB-S|^2-FB-7")
         art_df = art_df[cond]
         art_df["size_matrix"] = art_df["father_name"].apply(
-            lambda x: x.split("-")[5].strip()
+            lambda x: x.split("-")[5].strip() if len(x.split("-")) > 5 else "0"
         )
         art_df["size_count"] = art_df["size_matrix"].apply(
             lambda x: self.getSizeCount(x)
