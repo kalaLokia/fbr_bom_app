@@ -5,10 +5,20 @@
 
 import sys, os
 import datetime
+import logging
 
 from PyQt6 import QtWidgets, QtGui
 
 from windows.window_splash_screen import SplashScreen
+
+
+LOG_FILENAME = './logs.out'
+logging.basicConfig(
+    filename=LOG_FILENAME, 
+    level=logging.DEBUG, 
+    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
 
 
 def ErrorDialogWindow(title: str, message: str) -> None:
@@ -64,9 +74,7 @@ if __name__ == "__main__":
             try:
                 MainWindow = WindowHomeScreen()
                 MainWindow.show()
-            except Exception as e:
-                with open("log.txt", "a+") as f:
-                    f.write(f"--- {datetime.datetime.now()} --- ")
-                    f.write(e)
+            except:
+                logging.exception("App crashed..!!")
             finally:
                 sys.exit(app.exec())

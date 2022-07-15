@@ -15,6 +15,7 @@ materials:- item no, mrp, foreign name, no of pairs, product type,
 """
 
 import warnings
+import logging
 
 import pandas as pd
 from PyQt6 import QtCore
@@ -257,10 +258,12 @@ class WorkerThreadBom(QtCore.QThread):
         except IntegrityError as e:
             err = e.args[0].lower()
             if "violation of unique key constraint" in err:
+                logging.critical("Duplicate values found while setting up bom!!")
                 return (
                     False,
                     "Duplicate values found in the data, cannot proceed further.",
                 )
+            logging.exception("Database error found while setting up bom!!")
         except Exception as e:
             return (False, f"[Error 108] Server failure #report to me:\n{e}")
 
@@ -275,10 +278,12 @@ class WorkerThreadBom(QtCore.QThread):
         except IntegrityError as e:
             err = e.args[0].lower()
             if "violation of primary key constraint" in err:
+                logging.critical("Duplicate values found while setting up article list!!")
                 return (
                     False,
                     "Duplicate values found in the data, cannot proceed further.",
                 )
+            logging.exception("Database error found while setting up article list!!")
         except Exception as e:
             return (False, f"[Error 108] Server failure #report to me:\n{e}")
 
