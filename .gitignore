@@ -48,5 +48,5 @@ temp.py
 test.py
 *.ipynb
 *.xlsx
-
+logs.out
 

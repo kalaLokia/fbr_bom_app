@@ -58,9 +58,9 @@ class WorkerThreadBom(QtCore.QThread):
             "father",
             "father_name",
             "child",
-            "child_qty",
             "process",
             "process_order",
+            "child_qty",
         ]
         items_mandatory_cols = [
             "item_no",
@@ -116,6 +116,11 @@ class WorkerThreadBom(QtCore.QThread):
             return (False, 'Missing required columns in "item master data" file')
 
         self.update_progress.emit(48)  # Passing the progress signal
+
+        # Summing up duplicated rows in bom
+        bom_df = bom_df.groupby(by=bom_mandatory_cols[:-1], as_index=False)["child_qty"].sum()
+        self.update_progress.emit(49)  # Passing the progress signal
+
 
         bom_df["father_name"] = bom_df["father_name"].apply(
             lambda x: x.replace("--", "-").replace("  ", " ").strip().lower()
