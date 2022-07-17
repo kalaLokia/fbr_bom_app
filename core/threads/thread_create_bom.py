@@ -15,6 +15,7 @@ materials:- item no, mrp, foreign name, no of pairs, product type,
 """
 
 import warnings
+import logging
 
 import pandas as pd
 from PyQt6 import QtCore
@@ -57,9 +58,9 @@ class WorkerThreadBom(QtCore.QThread):
             "father",
             "father_name",
             "child",
-            "child_qty",
             "process",
             "process_order",
+            "child_qty",
         ]
         items_mandatory_cols = [
             "item_no",
@@ -115,6 +116,11 @@ class WorkerThreadBom(QtCore.QThread):
             return (False, 'Missing required columns in "item master data" file')
 
         self.update_progress.emit(48)  # Passing the progress signal
+
+        # Summing up duplicated rows in bom
+        bom_df = bom_df.groupby(by=bom_mandatory_cols[:-1], as_index=False)["child_qty"].sum()
+        self.update_progress.emit(49)  # Passing the progress signal
+
 
         bom_df["father_name"] = bom_df["father_name"].apply(
             lambda x: x.replace("--", "-").replace("  ", " ").strip().lower()
@@ -176,10 +182,13 @@ class WorkerThreadBom(QtCore.QThread):
         art_df.drop_duplicates(inplace=True)
         cond = art_df.father_name.str.contains(
             r"\d[xX]\d"
-        ) & ~art_df.father.str.contains(r"^2-FB-0|^2-FB-S|^2-FB-7")
+        ) 
+        # For negleting other articles that does not belongs to us
+        # Currently skipping this check,
+        # & ~art_df.father.str.contains(r"^2-FB-0|^2-FB-S|^2-FB-7")
         art_df = art_df[cond]
         art_df["size_matrix"] = art_df["father_name"].apply(
-            lambda x: x.split("-")[5].strip()
+            lambda x: x.split("-")[5].strip() if len(x.split("-")) > 5 else "0"
         )
         art_df["size_count"] = art_df["size_matrix"].apply(
             lambda x: self.getSizeCount(x)
@@ -254,10 +263,12 @@ class WorkerThreadBom(QtCore.QThread):
         except IntegrityError as e:
             err = e.args[0].lower()
             if "violation of unique key constraint" in err:
+                logging.critical("Duplicate values found while setting up bom!!")
                 return (
                     False,
                     "Duplicate values found in the data, cannot proceed further.",
                 )
+            logging.exception("Database error found while setting up bom!!")
         except Exception as e:
             return (False, f"[Error 108] Server failure #report to me:\n{e}")
 
@@ -272,10 +283,12 @@ class WorkerThreadBom(QtCore.QThread):
         except IntegrityError as e:
             err = e.args[0].lower()
             if "violation of primary key constraint" in err:
+                logging.critical("Duplicate values found while setting up article list!!")
                 return (
                     False,
                     "Duplicate values found in the data, cannot proceed further.",
                 )
+            logging.exception("Database error found while setting up article list!!")
         except Exception as e:
             return (False, f"[Error 108] Server failure #report to me:\n{e}")
 

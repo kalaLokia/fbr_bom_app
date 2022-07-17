@@ -1,7 +1,7 @@
 import math
 
 import pandas as pd
-
+import logging
 
 class BillOfMaterial:
     """Calculate and fetch correct bom for an article"""
@@ -24,7 +24,12 @@ class BillOfMaterial:
     @property
     def get_outer_sole(self):
         condition = self.bom_df.child.str.lower().str.startswith("4-pux")
-        return tuple(self.bom_df[condition][["child", "child_qty"]].iloc[0])
+        try:
+            value = tuple(self.bom_df[condition][["child", "child_qty"]].iloc[0])
+        except IndexError:
+            value = None
+            logging.warning("PU Mix bom not found for the article!")
+        return value
 
     @property
     def get_cost_of_materials(self):
@@ -90,10 +95,10 @@ class BillOfMaterial:
 
     def updatePuxConsumption(self) -> None:
         """Calculates PUX consumption as per the outer weight"""
-
-        self.bom_df.loc[
-            self.bom_df["father"] == self.get_outer_sole[0], "child_qty"
-        ] *= self.get_outer_sole[1]
+        if self.get_outer_sole:
+            self.bom_df.loc[
+                self.bom_df["father"] == self.get_outer_sole[0], "child_qty"
+            ] *= self.get_outer_sole[1]
 
     def calculateRate(self, process, item_rate, qty) -> float:
         rate = item_rate * qty
