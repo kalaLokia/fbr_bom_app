@@ -10,7 +10,7 @@ from io import BytesIO
 
 import pandas as pd
 
-from settings import EXPORT_DIR
+from settings import EXPORT_DIR, SBU_NAME
 
 
 if TYPE_CHECKING:
@@ -237,7 +237,7 @@ class ExcelReporting:
         self.worksheet.write(2, 1, "Article", fmt_artinfo1)
         self.worksheet.write(3, 1, "Color", fmt_artinfo1)
         self.worksheet.write(4, 1, "Category", fmt_artinfo1)
-        self.worksheet.merge_range("D2:D3", "FORTUNE BRANCH", fmt_branch)
+        self.worksheet.merge_range("D2:D3", SBU_NAME, fmt_branch)
         self.worksheet.write("D4", "COST SHEET", fmt_costsheet)
         self.worksheet.write(2, 5, "Size", fmt_textC)
         self.worksheet.write(3, 4, "PER PAIR", fmt_textC)

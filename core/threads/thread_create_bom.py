@@ -24,6 +24,7 @@ from sqlalchemy.exc import IntegrityError
 from database import SQL_T_BOM, SQL_T_ARTICLE
 from database.database import engine
 from database.sql_db import query_clean_bom_articles
+from settings import SBU_SAP_PREFIX
 
 
 class WorkerThreadBom(QtCore.QThread):
@@ -118,9 +119,10 @@ class WorkerThreadBom(QtCore.QThread):
         self.update_progress.emit(48)  # Passing the progress signal
 
         # Summing up duplicated rows in bom
-        bom_df = bom_df.groupby(by=bom_mandatory_cols[:-1], as_index=False)["child_qty"].sum()
+        bom_df = bom_df.groupby(by=bom_mandatory_cols[:-1], as_index=False)[
+            "child_qty"
+        ].sum()
         self.update_progress.emit(49)  # Passing the progress signal
-
 
         bom_df["father_name"] = bom_df["father_name"].apply(
             lambda x: x.replace("--", "-").replace("  ", " ").strip().lower()
@@ -182,10 +184,7 @@ class WorkerThreadBom(QtCore.QThread):
         art_df.drop_duplicates(inplace=True)
         cond = art_df.father_name.str.contains(
             r"\d[xX]\d"
-        ) 
-        # For negleting other articles that does not belongs to us
-        # Currently skipping this check,
-        # & ~art_df.father.str.contains(r"^2-FB-0|^2-FB-S|^2-FB-7")
+        ) & art_df.father.str.contains(rf"^2-{SBU_SAP_PREFIX}")
         art_df = art_df[cond]
         art_df["size_matrix"] = art_df["father_name"].apply(
             lambda x: x.split("-")[5].strip() if len(x.split("-")) > 5 else "0"
@@ -270,6 +269,7 @@ class WorkerThreadBom(QtCore.QThread):
                 )
             logging.exception("Database error found while setting up bom!!")
         except Exception as e:
+            logging.exception("App crashed while setting up bom!!")
             return (False, f"[Error 108] Server failure #report to me:\n{e}")
 
         self.update_progress.emit(88)  # Passing the progress signal
@@ -283,7 +283,9 @@ class WorkerThreadBom(QtCore.QThread):
         except IntegrityError as e:
             err = e.args[0].lower()
             if "violation of primary key constraint" in err:
-                logging.critical("Duplicate values found while setting up article list!!")
+                logging.critical(
+                    "Duplicate values found while setting up article list!!"
+                )
                 return (
                     False,
                     "Duplicate values found in the data, cannot proceed further.",
@@ -316,7 +318,7 @@ class WorkerThreadBom(QtCore.QThread):
             "km": "Component",
         }
         default_material_types = {
-            "fb": "Packing Material",
+            SBU_SAP_PREFIX.lower(): "Packing Material",
             "mpu": "Footwear Sole",
             "pux": "Footwear Sole",
         }
@@ -334,7 +336,7 @@ class WorkerThreadBom(QtCore.QThread):
     def getApplication(head, process) -> str:
         value = "".join(head.split("-")[1:2])
 
-        if value.lower() == "fb":
+        if value.upper() == SBU_SAP_PREFIX:
             if process == 1:
                 return "MC"
             elif process == 2:

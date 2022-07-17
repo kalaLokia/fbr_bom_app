@@ -2,6 +2,8 @@ import math
 
 import pandas as pd
 import logging
+from settings import FLD_PROC_ORDER, SLT_PROC_ORDER
+
 
 class BillOfMaterial:
     """Calculate and fetch correct bom for an article"""
@@ -61,13 +63,13 @@ class BillOfMaterial:
         """Updates rexine consumption for slitting/folding process"""
 
         slt_df = self.bom_df[
-            (self.bom_df.process_order == 8)
+            (self.bom_df.process_order == SLT_PROC_ORDER)
             & (self.bom_df.child_type == "Synthetic Leather")
         ]
         slt_items = slt_df["father"].tolist()
         for i, slt in enumerate(slt_items):
             slt_head_df = self.bom_df[self.bom_df.child == slt]
-            if slt_head_df.process_order.iloc[0] < 7:
+            if slt_head_df.process_order.iloc[0] < FLD_PROC_ORDER:
                 length = slt_head_df["child_qty"].iloc[0]
             else:
                 fld = slt_head_df.father.iloc[0]
@@ -80,7 +82,7 @@ class BillOfMaterial:
         """Updates component consumption of folding process"""
 
         fld_df = self.bom_df[
-            (self.bom_df.process_order == 7)
+            (self.bom_df.process_order == FLD_PROC_ORDER)
             & (
                 (self.bom_df.child_type == "Component")
                 | (self.bom_df.child_type == "Other Material")
@@ -89,7 +91,7 @@ class BillOfMaterial:
         fld_items = fld_df["father"].tolist()
         for i, fld in enumerate(fld_items):
             fld_head_df = self.bom_df[self.bom_df.child == fld]
-            if fld_head_df.process_order.iloc[0] < 7:
+            if fld_head_df.process_order.iloc[0] < FLD_PROC_ORDER:
                 length = fld_head_df["child_qty"].iloc[0]
                 self.bom_df.loc[fld_df.index.values[i], "child_qty"] *= length
 

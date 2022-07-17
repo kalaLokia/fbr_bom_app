@@ -16,6 +16,12 @@ DB_NAME = "harpy_eagle"  # app specific database name, not interfere with other 
 DB_USER = None
 DB_PASS = None
 DB_CONN_STR = None
+SBU_NAME = "FORTUNE BRANCH"
+SBU_NAME_ALIAS = "Fortune Br"
+SBU_ALIAS = "fbr"
+SBU_SAP_PREFIX = "FB"
+FLD_PROC_ORDER = 7
+SLT_PROC_ORDER = 8
 
 
 # Fixing windows taskbar icon setup
@@ -50,6 +56,23 @@ if ok_config:
         )
     if config.has_option("GENERAL", "SAVE_DIR"):
         EXPORT_DIR = config.get("GENERAL", "SAVE_DIR")
+
+    if config.has_option("GENERAL", "SBU_NAME"):
+        SBU_NAME = config.get("GENERAL", "SBU_NAME").upper()
+    if config.has_option("GENERAL", "SBU_NAME_ALIAS"):
+        SBU_NAME_ALIAS = config.get("GENERAL", "SBU_NAME_ALIAS").title()
+    if config.has_option("GENERAL", "SBU_ALIAS"):
+        SBU_ALIAS = config.get("GENERAL", "SBU_ALIAS").lower()
+    if config.has_option("GENERAL", "SBU_SAP_PREFIX"):
+        SBU_SAP_PREFIX = config.get("GENERAL", "SBU_SAP_PREFIX").upper()
+
+    if config.has_option("GENERAL", "FLD_PROC_ORDER"):
+        try:
+            new_fld_proc_order = int(config.get("GENERAL", "FLD_PROC_ORDER"))
+            FLD_PROC_ORDER = new_fld_proc_order
+            SLT_PROC_ORDER = 1 + FLD_PROC_ORDER
+        except ValueError:
+            pass
 
     author = None
     if config.has_option("GENERAL", "DEVELOPED_BY"):

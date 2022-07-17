@@ -8,7 +8,7 @@ from sqlalchemy.engine import URL
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql.schema import UniqueConstraint, PrimaryKeyConstraint  # , ForeignKey
 
-from settings import DB_CONN_STR
+from settings import DB_CONN_STR, SBU_ALIAS
 
 from . import (
     SQL_T_ARTICLE,
@@ -72,7 +72,7 @@ class Article(Base):
 
     @property
     def get_filename(self):
-        return self.article + " _fbr.xlsx"
+        return self.article + f" _{SBU_ALIAS}.xlsx"
 
 
 class OSCharges(Base):
