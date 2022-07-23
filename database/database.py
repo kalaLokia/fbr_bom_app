@@ -20,7 +20,7 @@ from . import (
 
 conn_url = URL.create("mssql+pyodbc", query={"odbc_connect": DB_CONN_STR})
 
-engine = sa.create_engine(conn_url, connect_args={"timeout": 5})
+engine = sa.create_engine(conn_url, connect_args={"timeout": 5}, fast_executemany=True)
 
 Base = declarative_base()
 

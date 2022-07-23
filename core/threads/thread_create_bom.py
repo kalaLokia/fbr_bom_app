@@ -258,6 +258,7 @@ class WorkerThreadBom(QtCore.QThread):
                 if_exists="append",
                 index=True,
                 index_label="bom_id",
+                chunksize=1000,
             )
         except IntegrityError as e:
             err = e.args[0].lower()
@@ -279,6 +280,7 @@ class WorkerThreadBom(QtCore.QThread):
                 con=engine,
                 if_exists="append",
                 index=False,
+                chunksize=1000,
             )
         except IntegrityError as e:
             err = e.args[0].lower()

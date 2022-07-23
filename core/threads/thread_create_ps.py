@@ -65,6 +65,7 @@ class WorkerThreadPriceStructure(QtCore.QThread):
                     con=engine,
                     if_exists="append",
                     index=False,
+                    chunksize=1000,
                 )
 
         except FileNotFoundError:
