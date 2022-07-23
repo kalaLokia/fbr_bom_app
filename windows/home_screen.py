@@ -14,7 +14,7 @@ from core.utils.cost_analysis import calculateProfit
 from core.utils.create_excel_report import ExcelReporting
 from database import sql_db
 from database.database import PriceStructure, OSCharges, Article
-from settings import EXPORT_DIR, update_default_save_dir
+from settings import EXPORT_DIR, update_default_save_dir, SBU_ALIAS
 from ui.ui_main_window import Ui_MainWindow
 from windows.window_app_logs import WindowAppLogs
 from windows.window_create_bom import WindowCreateBom
@@ -452,7 +452,7 @@ class WindowHomeScreen(QtWidgets.QMainWindow):
             filename, _ = QtWidgets.QFileDialog.getSaveFileName(
                 self,
                 "Save Detailed Report",
-                os.path.join(EXPORT_DIR, "Cost Analysis Report _fbr.csv"),
+                os.path.join(EXPORT_DIR, f"Cost Analysis Report _{SBU_ALIAS}.csv"),
                 "CSV Files (*.csv)",
             )
 
