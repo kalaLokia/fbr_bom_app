@@ -61,7 +61,7 @@ class WorkerThreadOsCharges(QtCore.QThread):
                         "Unable to clear database, check the connection with server.",
                     )
 
-                df.to_sql(SQL_T_CHARGES, con=engine, if_exists="append", index=False)
+                df.to_sql(SQL_T_CHARGES, con=engine, if_exists="append", index=False, chunksize=1000)
 
         except FileNotFoundError:
             return (False, "Files not found in the given directory.")

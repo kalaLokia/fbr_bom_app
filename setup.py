@@ -15,7 +15,7 @@ from cx_Freeze import setup, Executable
 
 
 # General App Info
-version = "1.3.6"
+version = "1.3.7"
 application_id = "{7B9341F5-0D66-4442-4C5A-6430D22E9AA4}"  # Used for app upgrades
 app_name = "Bom"
 description = "Generate bill of materials of article(s)"
